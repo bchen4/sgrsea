@@ -8,7 +8,7 @@ import pandas as pd
 import numpy as np
 import locale
 
-from CRISPR import *
+from crispr import *
 logging.basicConfig(format='%(levelname)s:%(message)s',level=logging.DEBUG)
 
 

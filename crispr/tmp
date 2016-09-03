@@ -1,0 +1,389 @@
+{'gene_29':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_28':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_23':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_22':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_21':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_20':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_27':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_26':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_25':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_24':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_38':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_39':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_30':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_31':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_32':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_33':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_34':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_35':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_36':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_37':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_89':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_88':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_85':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_84':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_87':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_86':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_81':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_80':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_83':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_82':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_67':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_66':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_65':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_64':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_63':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_62':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_61':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_60':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_69':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_68':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_1':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_2':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_3':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_4':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_5':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_6':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_7':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_8':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_9':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_92':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_93':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_90':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_91':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_96':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_97':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_94':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_95':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_12':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_13':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_10':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_11':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_16':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_17':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_14':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_15':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_18':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_19':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_74':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_75':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_76':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_77':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_70':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_71':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_72':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_73':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_78':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_79':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_41':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_40':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_43':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_42':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_45':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_44':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_47':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_46':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_49':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_48':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_58':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_59':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_56':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_57':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_54':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_55':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_52':                                                 sgRNA  \
+32  HGLibA_65019_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+32  NonTargetingControlGuideForHuman_0636      984      29  , 'gene_53':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_50':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  , 'gene_51':                                                 sgRNA  \
+21  HGLibA_64426_NonTargetingControlGuideForHuman_...   
+
+                                     gene  treat_1  ctrl_1  
+21  NonTargetingControlGuideForHuman_0043      282     232  }

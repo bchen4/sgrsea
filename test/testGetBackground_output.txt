@@ -1,0 +1,16 @@
+                            sgRNA          gene  B_Hi  B_Low  B_Unsort
+82      nonTargetA_24632_KIAA0391      KIAA0391    21    599       286
+83  nonTargetA_63138_hsa-mir-6746  hsa-mir-6746     0     57         0
+84          nonTargetA_27546_LSM5          LSM5   194    344         0
+85      nonTargetB_05804_C1orf186      C1orf186   171      0       142
+86         nonTargetB_20089_GPR98         GPR98    39     12         0
+87         nonTargetB_00046_AAGAB         AAGAB   584   1020      1222
+88        nonTargetA_17076_FBXO33        FBXO33    20      0        39
+89        nonTargetA_45880_SNAP29        SNAP29   228    825      1129
+90        nonTargetA_12146_CYP2U1        CYP2U1   289    215       371
+91         nonTargetB_48894_TECTA         TECTA   477    338         0
+92        nonTargetB_33466_OR10H3        OR10H3   381    103      1035
+93        nonTargetA_56228_ZNF556        ZNF556   316    453       659
+94      nonTargetB_05290_C12orf74      C12orf74   305   1012       328
+95        nonTargetA_47394_STAT5A        STAT5A   271     66       510
+96        nonTargetB_33922_OR4D10        OR4D10   230    220      1337

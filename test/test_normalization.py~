@@ -1,0 +1,32 @@
+import os
+import sys
+sys.path.insert(1,"../")
+import unittest
+
+import numpy as np
+import pandas as pd
+from pandas.util.testing import assert_frame_equal
+
+
+from CRISPR import *
+
+class TestNormalization(unittest.TestCase):
+	def setUp(self):
+		self.testfile = pd.read_table("testNormalization.txt",sep="\t")
+		self.method = ["upperquartile"]#,"total"]
+	
+	def test_norm(self):
+		for method in self.method:
+			output = Normalization.norm(self.testfile, method, "single")
+
+			if method == "upperquartile":
+				resultfile = pd.read_table("testNormalization.txt",sep="\t")
+				#self.assertEqual
+			#try:
+			assert_frame_equal(output.sort(axis=1),resultfile.sort(axis=1))
+			#	return True
+			#except:
+			#	return False
+
+if __name__ == '__main__':
+	unittest.main()

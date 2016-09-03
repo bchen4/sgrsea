@@ -1,0 +1,80 @@
+
+import sys
+import argparse
+import logging
+import os
+import pandas as pd
+import numpy as np
+import locale
+
+from CRISPR import *
+
+def prepare_argparser():
+	description = "Look for enriched genes in CRISPR-Cas9 experiment"
+	epilog = "For command line options of each command, type %(prog)s COMMAND -h"
+	argparser = argparse.ArgumentParser(description=description, epilog = epilog)
+	argparser.add_argument("-i","--input",dest = "infile", type = str, required = True, help = "Input count table")
+	argparser.add_argument("-t","--treatment",dest = "treatcol", type = str, required = True, default = 1, help = "The column numbers of treatment. -t 1,2,3")
+	argparser.add_argument("-c","--control",dest="ctrlcol",type=str,required=True, default=2, help = "The column number of control. -c 4,5,6")
+	argparser.add_argument("-o","--output",dest = "outfile", type = str,required = False, help = "output file, default is a input.crispr.xls file in current folder")
+	argparser.add_argument("-n","--normalization",dest = "normalizeMethod", type = str,required = True, default="total", help = "normalization method: upperquartile or total, default is normalize the data by total reads count")
+	argparser.add_argument("-b","--nontarget",dest = "nonT", type = str ,required = False, help = "The label to identify nontarget sgRNAs. Exlusive to -r. You must set either -b or -r.")
+	argparser.add_argument("-r","--nontargetRow",dest = "nonTrow", type = str,required = False, help = "Row ranges of nontargeting sgRNAs. Format: start,end. If only one number is provided, that number will be used as starting row and file end will be assumed as the last row for nontargeting sgRNAs")
+	argparser.add_argument("-p","--pvalue",dest = "pvalue", type = float,required = False, default = 0.05, help = "FDR cutoff for significant genes. Default is 0.05")
+	return(argparser)
+
+def runCrispr(args,bgflag,tag="",tagStart=0,tagStop=0):
+	try:
+		infile = pd.read_table(args.infile,sep="\t")
+		#infile.iloc[:,2:].apply(locale.atof)
+	except:
+		logging.error("Can not open input file, please check your file name. Exiting program.")
+		sys.exit(1)
+
+	#Normalization
+	treatments = args.treatcol.split(",")
+	controls = args.ctrlcol.split(",")
+	norm_flag = "single"
+	if not (len(treatments)==1 and len(controls) ==1): # replicates exsit 
+		norm_flag = "multiple"
+	normfile = Normalization.norm(infile,args.normalizeMethod,norm_flag)
+	print normfile.iloc[:,:]
+	#Get background data frame
+
+
+
+	#Statistical test
+
+
+	#Output
+
+
+
+
+def main():	
+	arg_parser = prepare_argparser()
+	args = arg_parser.parse_args()
+	#Validating parameters
+	getBG = 1 #flag for the method fetching nontargeting sgRNAs
+	nontag = ""
+	start = 0
+	stop = 0
+	if args.nonT == None:
+		if args.nonTRow == None:
+			logging.error("You must provide either -b or -r. Exiting program.")
+			sys.exit(0)
+		else:
+			rows = args.nonTRow.split(",")
+			if len(rows)==2:
+				start = int(rows[0])
+				stop = int(rows[1])
+			else:
+				start = int(rows[0])
+				stop = 10**20 #set to a big number so the end of file will be used
+			getBG = 2
+	else:
+		nontag = args.nonT
+	runCrispr(args,getBG,nontag,start,stop)
+
+if __name__=="__main__":
+	main()

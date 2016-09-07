@@ -40,6 +40,10 @@ def runsgcount(args):
     #outfile = open(args.outfile+".count.txt","w")
     #outsummary = open(args.outfile+".count.summary","w")
     result = sgcount(infile, lib, args.sgstart, args.sgstop, args.trim3)
+    result_df = lib.merge(results,on="Sequence",how="left")
+    result_df.fillna(0)
+    result_df.to_csv(args.outfile+".count.txt",sep="\t",index=False)
+
 
 def testfunc(queue,pname,fname):
   print "Process name",pname,"file name", fname
@@ -89,22 +93,24 @@ def makelib(libs, sublib):
   seq_count_df = pd.DataFrame({'Sequence':seq_count.index, 'Count':seq_count.values})
   df_uniq = df[df['Sequence'].isin(seq_count_df[seq_count_df['Count']==1]['Sequence'])]
   return df_uniq.head()
-    
-def sgcount(fqfile, lib, sgstart, sgstop, trim3):
+   
+def trimseq(seq,start,stop,trim3=None):
+  if start > 0:
+    pass
+
+
+def sgcount(fqfile,sgstart, sgstop, trim3,label="count"):
   mapped = 0
   total_count = 0
-  for record in fqfile:
-    total_count +=1
-    #if i % 1000000 ==0:
-  #    logging.info("Processed "+str(i% 1000000)+"M reads...")
-    if libdic.has_key(str(record.seq)):
-      mapped+=1
-      libdic[str(record.seq)][2]+=1
-  for values in libdic.values():
-    print >> outfile,"%s\t%s\t%d\t%f" % (values[0],values[1],values[2],(values[2]*1000000.0/mapped)+1)
-  print >>outsummary,"%s\t%d\t%d\t%f" % (args.outfile,total_count,mapped,mapped*1.0/total_count)
-  outfile.close()
-
+  seqdic = {}
+  for record in SeqIO.parse(fqfile,"fastq"):
+    total_count += 1
+    sequence =  trimseq(str(record.seq),sgstart, sgstop, trim3)
+    if not seqdic.has_key(sequence):
+      seqdic[sequence] = 0
+    seqdic[sequence)]+=1
+  seq_count = pd.DataFrame(seqdic.items(),columns=['Sequence',label])
+  return seq_count
 
 def main():
   argparser = prepare_argparser()

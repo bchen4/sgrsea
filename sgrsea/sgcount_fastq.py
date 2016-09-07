@@ -32,13 +32,14 @@ def runsgcount(args):
     sys.exit(1)
   if args.designfile:#parse design file
     #If design file is provided, sgRNA start, stop, trim3 will be ignored
+    dfile = pd.read_table(args.designfile)
     result = multicount(args)
   elif args.infile:
     infile = open(args.infile,"r")
-    lib = open(args.libfile,"r")
-    outfile = open(args.outfile+".count.txt","w")
-    outsummary = open(args.outfile+".count.summary","w")
-    result = sgcount(args)
+    lib = makelib(args.libfile)
+    #outfile = open(args.outfile+".count.txt","w")
+    #outsummary = open(args.outfile+".count.summary","w")
+    result = sgcount(infile, lib, args.sgstart, args.sgstop, args.trim3)
 
 def testfunc(queue,pname,fname):
   print "Process name",pname,"file name", fname
@@ -63,20 +64,31 @@ def multicount(args):
     result.append(work_queue.get())
   print result
 
-def sgcount(fqfile, lib):
-
+def makelib(*libs):
   libdic = {}
   dupseq = []
-  for row in lib:
-    buf = row.rstrip().split("\t")
-    if not libdic.has_key(buf[1]):
-      libdic[buf[1]]=[buf[0],buf[2],0]
-    else:
-      dupseq.append(buf[1])
-  for d in dupseq:
-    print d
-  for k in dupseq:
-    libdic.pop(k,None)
+  for libfile in libs:
+    for row in libfile:
+      buf = row.rstrip().split("\t")
+      if not libdic.has_key(buf[1]):
+        libdic[buf[1]]=[buf[0],buf[2],0]
+      else:
+        dupseq.append(buf[1])
+    for k in dupseq:
+      libdic.pop(k,None)
+  return libdic
+
+def makelib_pd(*libs):
+  #Pandas dataframe columns are: ['sgRNA','Gene','Sequence']
+  df = pd.DataFrame()
+  for lib in libs:
+    df = df.append(lib)
+  seq_count = pd['Sequence'].value_counts()
+  seq_count_df = pd.DataFrame({'Sequence':seq_count.index, 'Count':seq_count.values})
+  df_uniq = df[df['Sequence'].isin(seq_count_df[seq_count_df['Count']==1]['Sequence'])]
+  df.set_index('Sequence')[['sgRNA','Gene']].to_dict()
+
+def sgcount(fqfile, lib, sgstart, sgstop, trim3):
   mapped = 0
   total_count = 0
   for record in fqfile:

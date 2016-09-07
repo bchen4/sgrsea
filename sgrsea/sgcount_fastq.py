@@ -64,30 +64,32 @@ def multicount(args):
     result.append(work_queue.get())
   print result
 
-def makelib(*libs):
-  libdic = {}
-  dupseq = []
-  for libfile in libs:
-    for row in libfile:
-      buf = row.rstrip().split("\t")
-      if not libdic.has_key(buf[1]):
-        libdic[buf[1]]=[buf[0],buf[2],0]
-      else:
-        dupseq.append(buf[1])
-    for k in dupseq:
-      libdic.pop(k,None)
-  return libdic
+#DEL#def makelib(*libs):
+#DEL#  libdic = {}
+#DEL#  dupseq = []
+#DEL#  for libfile in libs:
+#DEL#    for row in libfile:
+#DEL#      buf = row.rstrip().split("\t")
+#DEL#      if not libdic.has_key(buf[1]):
+#DEL#        libdic[buf[1]]=[buf[0],buf[2],0]
+#DEL#      else:
+#DEL#        dupseq.append(buf[1])
+#DEL#    for k in dupseq:
+#DEL#      libdic.pop(k,None)
+#DEL#  return libdic
 
-def makelib_pd(*libs):
-  #Pandas dataframe columns are: ['sgRNA','Gene','Sequence']
-  df = pd.DataFrame()
-  for lib in libs:
-    df = df.append(lib)
-  seq_count = pd['Sequence'].value_counts()
+def makelib(libs, sublib):
+  #Pandas dataframe columns are: ['sgRNA','Gene','Sequence','sublib']
+  df = pd.DataFrame(columns=['sgRNA','Gene','Sequence','sublib'])
+  for i in range(len(libs)):
+    newdf = pd.read_table(libs[i])
+    newdf['sublib'] = [sublib[i]]*newdf.shape[0]
+    df = df.append(newdf)
+  seq_count = df['Sequence'].value_counts()
   seq_count_df = pd.DataFrame({'Sequence':seq_count.index, 'Count':seq_count.values})
   df_uniq = df[df['Sequence'].isin(seq_count_df[seq_count_df['Count']==1]['Sequence'])]
-  df.set_index('Sequence')[['sgRNA','Gene']].to_dict()
-
+  return df_uniq.head()
+    
 def sgcount(fqfile, lib, sgstart, sgstop, trim3):
   mapped = 0
   total_count = 0
@@ -107,8 +109,10 @@ def sgcount(fqfile, lib, sgstart, sgstop, trim3):
 def main():
   argparser = prepare_argparser()
   args = argparser.parse_args()
-  runsgcount(args)
-
+  #runsgcount(args)
+  makelib_pd(["demolib.txt"],["A"])
+  #df = pd.read_table("demolib.txt")
+  #makelib_pd(df)
 
 if __name__=="__main__":
   main()

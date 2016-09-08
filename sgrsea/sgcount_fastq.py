@@ -20,7 +20,7 @@ def prepare_argparser():
   group.add_argument("-i","--input",dest = "infile",type=str, help="input fastq")
   group.add_argument("-d","--design",dest="designfile",type=str,help = "design file")
   argparser.add_argument("-o","--output",dest = "outfile",type=str,required=True, help="output")
-  argparser.add_argument("-l","--library",dest="libfile",type=str,required=True, help = "Gene locus in bed format")
+  argparser.add_argument("-l","--library",dest="libfile",type=str, help = "Gene locus in bed format")
   argparser.add_argument("--sgstart",dest="sgstart",type=int, default=-1,help = "The first nucleotide sgRNA starts. 1-index")
   argparser.add_argument("--sgstop",dest="sgstop",type=int, default=-1,help = "The last nucleotide sgRNA starts. 1-index")
   argparser.add_argument("--trim3",dest="trim3",type=str,help = "The trimming pattern from 3'. This pattern and the following sequence will be removed")
@@ -35,6 +35,7 @@ def runsgcount(args):
     dfile = pd.read_table(args.designfile)
     libinfo = dfile.loc[:,['lib','sublib']].drop_duplicates()
     lib = makelib(libinfo['lib'].tolist(),libinfo['sublib'].tolist())
+    lib.to_csv(args.outfile,sep="\t",index=False)
     result = multicount(dfile)
   elif args.infile:
     infile = open(args.infile,"r")

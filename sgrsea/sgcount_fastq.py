@@ -19,11 +19,11 @@ def prepare_argparser():
   group = argparser.add_mutually_exclusive_group()
   group.add_argument("-i","--input",dest = "infile",type=str, help="input fastq")
   group.add_argument("-d","--design",dest="designfile",type=str,help = "design file")
-  #argparser.add_argument("-o","--output",dest = "outfile",type=str,required=True, help="output")
-  #argparser.add_argument("-l","--library",dest="libfile",type=str,required=True, help = "Gene locus in bed format")
-  #argparser.add_argument("--sgstart",dest="sgstart",type=int, default=-1,help = "The first nucleotide sgRNA starts. 1-index")
-  #argparser.add_argument("--sgstop",dest="sgstop",type=int, default=-1,help = "The last nucleotide sgRNA starts. 1-index")
-  #argparser.add_argument("--trim3",dest="trim3",type=str,help = "The trimming pattern from 3'. This pattern and the following sequence will be removed")
+  argparser.add_argument("-o","--output",dest = "outfile",type=str,required=True, help="output")
+  argparser.add_argument("-l","--library",dest="libfile",type=str,required=True, help = "Gene locus in bed format")
+  argparser.add_argument("--sgstart",dest="sgstart",type=int, default=-1,help = "The first nucleotide sgRNA starts. 1-index")
+  argparser.add_argument("--sgstop",dest="sgstop",type=int, default=-1,help = "The last nucleotide sgRNA starts. 1-index")
+  argparser.add_argument("--trim3",dest="trim3",type=str,help = "The trimming pattern from 3'. This pattern and the following sequence will be removed")
   return(argparser)
 
 def runsgcount(args):
@@ -33,40 +33,50 @@ def runsgcount(args):
   if args.designfile:#parse design file
     #If design file is provided, sgRNA start, stop, trim3 will be ignored
     dfile = pd.read_table(args.designfile)
-    result = multicount(args)
+    #libinfo = dfile.loc[:,['lib','sublib']].drop_duplicates()
+    #lib = makelib(libinfo['lib'].tolist(),libinfo['sublib'].tolist())
+    result = multicount(dfile,dfile)
   elif args.infile:
     infile = open(args.infile,"r")
     lib = makelib(args.libfile)
     #outfile = open(args.outfile+".count.txt","w")
     #outsummary = open(args.outfile+".count.summary","w")
     result = sgcount(infile, lib, args.sgstart, args.sgstop, args.trim3)
-    result_df = lib.merge(results,on="Sequence",how="left")
-    result_df.fillna(0)
-    result_df.to_csv(args.outfile+".count.txt",sep="\t",index=False)
+  #merge results df with lib
+  result_df = lib.merge(results,on="Sequence",how="left")
+  result_df.fillna(0)
+  result_df.to_csv(args.outfile+".count.txt",sep="\t",index=False)
 
 
-def testfunc(queue,pname,fname):
-  print "Process name",pname,"file name", fname
-  queue.put(pname)
+def callsgcount(queue,fname,sgstart,sgstop,trim3,label):
+  print "file name", fname
+  queue.put(sgcount(fname,sgstart,sgstop,trim3,label))
 
-def multicount(args):
-  infile = open(args.designfile,"r")
-  filebuf = infile.readlines()
-  work_num = len(filebuf)
+def testfunc(f,a,b):
+  return f+":"+str(a+b)
+
+def multicount(dfile, lib):
+  '''
+  Parse design file, and call sgcount for each file. 
+  Combine all results to a Pandas dataframe and return
+  '''
+  work_num = dfile.shape[0]
   work_queue = Queue()
   workers = []
   for index in range(work_num):
-    p = Process(target=testfunc, args=(work_queue,index, filebuf[index]))
+    record = dfile.iloc[index,:]
+    p = Process(target=callsgcount, args=(work_queue,record['filepath'],
+      record['sgstart'],record['sgstop'],record['trim3'],record['label']))
     workers.append(p)
     p.start()
 
   for process in workers:
     process.join()
 
-  result = []
-  for i in range(work_num):
-    result.append(work_queue.get())
-  print result
+  result = work_queue.get()#output should be a Pandas df
+  for i in range(work_num-1):
+    result = result.merge(work_queue.get(),on="Sequence",how="outer")
+  return result
 
 #DEL#def makelib(*libs):
 #DEL#  libdic = {}
@@ -100,7 +110,7 @@ def trimseq(seq,start,stop,trim3=None):
   if 0 < stop <= len(seq):
     new_stop  = stop
   if trim3:#find the pattern from tail and trim off the rest of seq
-    trim_index = seq.rfind(trim3))
+    trim_index = seq.rfind(trim3)
     if trim_index >0:
       new_stop = min(new_stop, trim_index+1)
   trim_seq = seq[new_start:new_stop]
@@ -116,15 +126,15 @@ def sgcount(fqfile,sgstart, sgstop, trim3,label="count"):
     sequence =  trimseq(str(record.seq),sgstart, sgstop, trim3)
     if not seqdic.has_key(sequence):
       seqdic[sequence] = 0
-    seqdic[sequence)]+=1
+    seqdic[sequence]+=1
   seq_count = pd.DataFrame(seqdic.items(),columns=['Sequence',label])
   return seq_count
 
 def main():
   argparser = prepare_argparser()
   args = argparser.parse_args()
-  #runsgcount(args)
-  makelib_pd(["demolib.txt"],["A"])
+  runsgcount(args)
+  #makelib_pd(["demolib.txt"],["A"])
   #df = pd.read_table("demolib.txt")
   #makelib_pd(df)
 

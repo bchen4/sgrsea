@@ -33,18 +33,17 @@ def runsgcount(args):
   if args.designfile:#parse design file
     #If design file is provided, sgRNA start, stop, trim3 will be ignored
     dfile = pd.read_table(args.designfile)
-    #libinfo = dfile.loc[:,['lib','sublib']].drop_duplicates()
-    #lib = makelib(libinfo['lib'].tolist(),libinfo['sublib'].tolist())
-    result = multicount(dfile,dfile)
+    libinfo = dfile.loc[:,['lib','sublib']].drop_duplicates()
+    lib = makelib(libinfo['lib'].tolist(),libinfo['sublib'].tolist())
+    result = multicount(dfile)
   elif args.infile:
     infile = open(args.infile,"r")
-    lib = makelib(args.libfile)
-    #outfile = open(args.outfile+".count.txt","w")
-    #outsummary = open(args.outfile+".count.summary","w")
-    result = sgcount(infile, lib, args.sgstart, args.sgstop, args.trim3)
+    lib = makelib([args.libfile],['sublib'])
+    #logging.debug("There are "+str(lib.shape[0])+" sgRNAs in the library")
+    result = sgcount(infile, args.sgstart, args.sgstop, args.trim3)
   #merge results df with lib
-  result_df = lib.merge(results,on="Sequence",how="left")
-  result_df.fillna(0)
+  result_df = lib.merge(result,on="Sequence",how="left")
+  result_df = result_df.fillna(0)
   result_df.to_csv(args.outfile+".count.txt",sep="\t",index=False)
 
 
@@ -55,7 +54,7 @@ def callsgcount(queue,fname,sgstart,sgstop,trim3,label):
 def testfunc(f,a,b):
   return f+":"+str(a+b)
 
-def multicount(dfile, lib):
+def multicount(dfile):
   '''
   Parse design file, and call sgcount for each file. 
   Combine all results to a Pandas dataframe and return
@@ -78,19 +77,6 @@ def multicount(dfile, lib):
     result = result.merge(work_queue.get(),on="Sequence",how="outer")
   return result
 
-#DEL#def makelib(*libs):
-#DEL#  libdic = {}
-#DEL#  dupseq = []
-#DEL#  for libfile in libs:
-#DEL#    for row in libfile:
-#DEL#      buf = row.rstrip().split("\t")
-#DEL#      if not libdic.has_key(buf[1]):
-#DEL#        libdic[buf[1]]=[buf[0],buf[2],0]
-#DEL#      else:
-#DEL#        dupseq.append(buf[1])
-#DEL#    for k in dupseq:
-#DEL#      libdic.pop(k,None)
-#DEL#  return libdic
 
 def makelib(libs, sublib):
   #Pandas dataframe columns are: ['sgRNA','Gene','Sequence','sublib']
@@ -102,9 +88,13 @@ def makelib(libs, sublib):
   seq_count = df['Sequence'].value_counts()
   seq_count_df = pd.DataFrame({'Sequence':seq_count.index, 'Count':seq_count.values})
   df_uniq = df[df['Sequence'].isin(seq_count_df[seq_count_df['Count']==1]['Sequence'])]
-  return df_uniq.head()
+  return df_uniq
    
 def trimseq(seq,start,stop,trim3=None):
+  #logging.debug(seq)
+  #logging.debug(start)
+  #logging.debug(stop)
+  #logging.debug(len(seq))
   if len(seq)> start > 0:
     new_start = start - 1
   if 0 < stop <= len(seq):

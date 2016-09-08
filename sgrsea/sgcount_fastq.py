@@ -95,8 +95,16 @@ def makelib(libs, sublib):
   return df_uniq.head()
    
 def trimseq(seq,start,stop,trim3=None):
-  if start > 0:
-    pass
+  if len(seq)> start > 0:
+    new_start = start - 1
+  if 0 < stop <= len(seq):
+    new_stop  = stop
+  if trim3:#find the pattern from tail and trim off the rest of seq
+    trim_index = seq.rfind(trim3))
+    if trim_index >0:
+      new_stop = min(new_stop, trim_index+1)
+  trim_seq = seq[new_start:new_stop]
+  return trim_seq
 
 
 def sgcount(fqfile,sgstart, sgstop, trim3,label="count"):

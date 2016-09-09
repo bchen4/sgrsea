@@ -35,13 +35,15 @@ def runsgcount(args):
     dfile = pd.read_table(args.designfile)
     libinfo = dfile.loc[:,['lib','sublib']].drop_duplicates()
     lib = makelib(libinfo['lib'].tolist(),libinfo['sublib'].tolist())
-    lib.to_csv(args.outfile,sep="\t",index=False)
+    #lib.to_csv(args.outfile,sep="\t",index=False)
     result = multicount(dfile)
   elif args.infile:
     infile = open(args.infile,"r")
     lib = makelib([args.libfile],['sublib'])
     #logging.debug("There are "+str(lib.shape[0])+" sgRNAs in the library")
-    result = sgcount(infile, args.sgstart, args.sgstop, args.trim3)
+    result = pd.read_table(sgcount(infile, args.sgstart, args.sgstop, args.trim3))
+  #Get total reads count df
+
   #merge results df with lib
   result_df = lib.merge(result,on="Sequence",how="left")
   result_df = result_df.fillna(0)
@@ -49,11 +51,10 @@ def runsgcount(args):
 
 
 def callsgcount(queue,fname,sgstart,sgstop,trim3,label):
-  print "file name", fname
   queue.put(sgcount(fname,sgstart,sgstop,trim3,label))
 
-def testfunc(f,a,b):
-  return f+":"+str(a+b)
+#def testfunc(f,a,b,c,d):
+#  return f+":"+str(a+b)
 
 def multicount(dfile):
   '''
@@ -69,13 +70,16 @@ def multicount(dfile):
       record['sgstart'],record['sgstop'],record['trim3'],record['label']))
     workers.append(p)
     p.start()
-
+  
+  logging.info("Start join process")
   for process in workers:
     process.join()
-
-  result = work_queue.get()#output should be a Pandas df
+  logging.info("All process finished") 
+  #get results
+  logging.info("Retrive results")
+  result = pd.read_table(work_queue.get())#output should be a Pandas df
   for i in range(work_num-1):
-    result = result.merge(work_queue.get(),on="Sequence",how="outer")
+    result = result.merge(pd.read_table(work_queue.get()),on="Sequence",how="outer")
   return result
 
 
@@ -92,10 +96,6 @@ def makelib(libs, sublib):
   return df_uniq
    
 def trimseq(seq,start,stop,trim3=None):
-  #logging.debug(seq)
-  #logging.debug(start)
-  #logging.debug(stop)
-  #logging.debug(len(seq))
   if len(seq)> start > 0:
     new_start = start - 1
   if 0 < stop <= len(seq):
@@ -109,17 +109,26 @@ def trimseq(seq,start,stop,trim3=None):
 
 
 def sgcount(fqfile,sgstart, sgstop, trim3,label="count"):
+  '''
+  Count sequence frequency in a fastq file.
+  Write result in a temp file due to Python multiprocessing hang with huge result. (It can only handle int and string, not a instance of a class)
+  '''
   mapped = 0
   total_count = 0
   seqdic = {}
   for record in SeqIO.parse(fqfile,"fastq"):
     total_count += 1
+    if total_count % 500000 ==0:
+      logging.info("Processed "+fqfile+" "+str(total_count)+" reads...")
+      #break
     sequence =  trimseq(str(record.seq),sgstart, sgstop, trim3)
     if not seqdic.has_key(sequence):
       seqdic[sequence] = 0
     seqdic[sequence]+=1
   seq_count = pd.DataFrame(seqdic.items(),columns=['Sequence',label])
-  return seq_count
+  logging.info(seq_count.shape)
+  seq_count.to_csv(fqfile+".tmpcount",sep="\t",index=False)
+  return fqfile+".tmpcount"
 
 def main():
   argparser = prepare_argparser()

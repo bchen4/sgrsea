@@ -1,6 +1,7 @@
 #!/usr/bin/python
-# programmer : bbc
-# usage:
+# programmer : beibei chen
+# usage: count sgRNA from fastq file
+# last modification: 9/9/2016
 
 import sys
 from Bio import SeqIO
@@ -36,25 +37,32 @@ def runsgcount(args):
     libinfo = dfile.loc[:,['lib','sublib']].drop_duplicates()
     lib = makelib(libinfo['lib'].tolist(),libinfo['sublib'].tolist())
     #lib.to_csv(args.outfile,sep="\t",index=False)
-    result = multicount(dfile)
+    (result, total_fq_count) = multicount(dfile)
   elif args.infile:
     infile = open(args.infile,"r")
     lib = makelib([args.libfile],['sublib'])
-    #logging.debug("There are "+str(lib.shape[0])+" sgRNAs in the library")
-    result = pd.read_table(sgcount(infile, args.sgstart, args.sgstop, args.trim3))
+    ##logging.debug("There are "+str(lib.shape[0])+" sgRNAs in the library")
+    total_fq_count = {}
+    (result_addr,total_count) = sgcount(infile, args.sgstart, args.sgstop, args.trim3)
+    result = pd.read_table(fqfile+".tmpcount")
+    total_fq_count[fqfile] = total_count
   #Get total reads count df
-
+  result_total_df = pd.DataFrame(total_fq_count.items(),columns=["filepath","total_reads"])
+  summary_df = dfile.merge(result_total_df,on="filepath")
   #merge results df with lib
   result_df = lib.merge(result,on="Sequence",how="left")
   result_df = result_df.fillna(0)
+  #logging.debug(result_df.head())
+  mapped_total = result_df.iloc[:,3:].groupby("sublib").sum().reset_index()
+  mapped_total_df = pd.melt(mapped_total, id_vars=['sublib'],var_name=['label'],value_name='mapped_reads')
+  summary_df = summary_df.merge(mapped_total_df,on=['sublib','label'])
+  summary_df['mapping_ratio'] = summary_df['mapped_reads']/summary_df['total_reads']
+  summary_df = summary_df.loc[:,['filepath','label','sublib','total_reads','mapped_reads','mapping_ratio']]
   result_df.to_csv(args.outfile+".count.txt",sep="\t",index=False)
-
+  summary_df.to_csv(args.outfile+".summary.txt",sep="\t",index=False)
 
 def callsgcount(queue,fname,sgstart,sgstop,trim3,label):
   queue.put(sgcount(fname,sgstart,sgstop,trim3,label))
-
-#def testfunc(f,a,b,c,d):
-#  return f+":"+str(a+b)
 
 def multicount(dfile):
   '''
@@ -77,10 +85,23 @@ def multicount(dfile):
   logging.info("All process finished") 
   #get results
   logging.info("Retrive results")
-  result = pd.read_table(work_queue.get())#output should be a Pandas df
+  total_fq_count = {}
+  (fqfilename,total_count) = work_queue.get()#output should be a Pandas df
+  result = pd.read_table(fqfilename+".tmpcount")
+  try:
+    os.remove(fqfilename+".tmpcount")
+  except:
+    logging.warning("Cannot delete "+fqfilename+".tmpcount")
+  total_fq_count[fqfilename] = total_count
   for i in range(work_num-1):
-    result = result.merge(pd.read_table(work_queue.get()),on="Sequence",how="outer")
-  return result
+    (fqfilename,total_count) = work_queue.get()#output should be a Pandas df
+    result = result.merge(pd.read_table(fqfilename+".tmpcount"),on="Sequence",how="outer")
+    try:
+      os.remove(fqfilename+".tmpcount")
+    except:
+      logging.warning("Cannot delete "+fqfilename+".tmpcount")
+    total_fq_count[fqfilename] = total_count
+  return (result, total_fq_count)
 
 
 def makelib(libs, sublib):
@@ -113,7 +134,6 @@ def sgcount(fqfile,sgstart, sgstop, trim3,label="count"):
   Count sequence frequency in a fastq file.
   Write result in a temp file due to Python multiprocessing hang with huge result. (It can only handle int and string, not a instance of a class)
   '''
-  mapped = 0
   total_count = 0
   seqdic = {}
   for record in SeqIO.parse(fqfile,"fastq"):
@@ -128,15 +148,12 @@ def sgcount(fqfile,sgstart, sgstop, trim3,label="count"):
   seq_count = pd.DataFrame(seqdic.items(),columns=['Sequence',label])
   logging.info(seq_count.shape)
   seq_count.to_csv(fqfile+".tmpcount",sep="\t",index=False)
-  return fqfile+".tmpcount"
+  return (fqfile,total_count)
 
 def main():
   argparser = prepare_argparser()
   args = argparser.parse_args()
   runsgcount(args)
-  #makelib_pd(["demolib.txt"],["A"])
-  #df = pd.read_table("demolib.txt")
-  #makelib_pd(df)
 
 if __name__=="__main__":
   main()

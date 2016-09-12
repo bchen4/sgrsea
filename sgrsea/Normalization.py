@@ -58,7 +58,6 @@ def norm(infile,method):
 	#Normalize for sample size	
   infile.iloc[:,2:] = infile.iloc[:,2:].div(norm_factor/float(smooth_factor),axis="columns")
   infile.iloc[:,2:] = infile.iloc[:,2:].applymap(lambda x: x+1)
-
   infile.iloc[:,2:] = infile.iloc[:,2:].applymap(around)
   return infile
 

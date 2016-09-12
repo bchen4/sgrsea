@@ -3,13 +3,23 @@
 # usage:
 
 import sys
-import re
-import random
-import string
 import logging
 import numpy as np
 import pandas as pd
+import argparse as ap
 import matplotlib.pyplot as plt
+logging.basicConfig(level=10)
+
+def prepare_argparser():
+  description = "Normalize count data"
+  epilog = "For command line options of each command, type %(prog)% COMMAND -h"
+  argparser = ap.ArgumentParser(description=description, epilog = epilog)
+  argparser.add_argument("-i","--input",dest = "infile",type=str, required=True, help="input count file matrix")
+  argparser.add_argument("-m","--method",dest="method", default="total", type=str,help ="design file", choices=['total','median','upperquantile'])
+  argparser.add_argument("-o","--output",dest = "outfile",type=str,required=True, help="output")
+  argparser.add_argument("--split-lib",dest = "splitlib",action='store_true', help="Lib A and B are sequenced separately")
+
+
 
 def percentile(n):
 	def percentile_(x):
@@ -36,9 +46,7 @@ def around(x):
     else:
       return int(x)+1
 
-def norm(infile,method,flag="single"):
-	#For single treatment and single control
-  #Check for negative numbers and replace them to zero
+def norm(infile,method):
   num = infile._get_numeric_data()
   num[num < 0] = 0
   if method == "upperquartile":
@@ -54,9 +62,20 @@ def norm(infile,method,flag="single"):
   infile.iloc[:,2:] = infile.iloc[:,2:].applymap(around)
   return infile
 
+def normalization(infile, outfile, method, splitlib):
+  if splitlib: #normalize sub lib separately
+    norm_df = pd.DataFrame(columns = infile.columns)
+    for sublib, group in infile.groupby('sublib'):
+      norm_df.append(norm(infile, method))
+  else:
+    norm_df = norm(infile,method)
+  norm_df.to_csv(outfile, sep="\t", index=False)
 
 def main():
-	infile = pd.read_table(sys.argv[1],sep="\t")
+	argparser = prepare_argparser()
+  args = argparser.parse_args()
+  normalization(args.infile, args.outfile, args.method, args.splitlib)
+  #infile = pd.read_table(sys.argv[1],sep="\t")
 	#print norm(infile,"upperquartile","single")
 
 if __name__ == '__main__':

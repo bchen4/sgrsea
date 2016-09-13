@@ -55,15 +55,10 @@ def norm(infile,method):
   elif method == "total":
     norm_factor = num.apply(np.sum,axis=0).astype(float)
     smooth_factor = 10**6 * 1.0
-  #logging.debug(norm_factor)
-  #logging.debug(smooth_factor)
-  #Normalize for sample size  
-  #logging.debug(num.head())
   num_norm = num.div(norm_factor/float(smooth_factor),axis="columns")
   num_norm = num_norm.applymap(lambda x: x+1)
   #num_norm = num_norm.applymap(around)
   norm_df = info.join(num_norm)
-  #elogging.debug(num_norm.head())
   return norm_df
 
 def normalization(infile, outfile, method, splitlib):
@@ -75,11 +70,7 @@ def normalization(infile, outfile, method, splitlib):
       logging.debug(sublib)
       norm_df = norm_df.append(norm(group, method))
   else:
-    norm_df = norm(infile,method)
-  #cols = norm_df.columns.tolist()
-  #cols.insert(0,cols.pop(cols.index('sgRNA')))
-  #cols.insert(1,cols.pop(cols.index('Gene')))
-  #cols.insert(0,cols.pop(cols.index('sgRNA')))
+    norm_df = norm(pd.read_table(infile),method)
   norm_df.to_csv(outfile, sep="\t", index=False)
 
 def main():

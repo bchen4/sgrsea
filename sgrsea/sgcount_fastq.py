@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # programmer : beibei chen
 # usage: count sgRNA from fastq file
-# last modification: 9/9/2016
+# last modification: 9/13/2016
 
 import sys
 from Bio import SeqIO
@@ -37,36 +37,19 @@ def runsgcount(args):
     libinfo = dfile.loc[:,['lib','sublib']].drop_duplicates()
     lib = makelib(libinfo['lib'].tolist(),libinfo['sublib'].tolist())
     lib_df = pd.DataFrame()
-    #for k,v in lib.items():
-    #  lib_df = lib_df.append(v)
-    #lib_df.to_csv(args.outfile+".lib.txt",sep="\t",index=False)
     (result, total_fq_count) = multicount(dfile)
-    for k,v in result.items():
-      print k, v.iloc[0:10,]
-    print total_fq_count
     (result_df, summary_df) = generatefinaltable(result, total_fq_count, lib, dfile)
   elif args.infile:
-    infile = open(args.infile,"r")
+    #infile = open(args.infile,"r")
     lib = makelib([args.libfile],['sublib'])
+    result = {}
     ##logging.debug("There are "+str(lib.shape[0])+" sgRNAs in the library")
     total_fq_count = {}
-    (result_addr,total_count) = sgcount(infile, args.sgstart, args.sgstop, args.trim3)
-    result = pd.read_table(fqfile+".tmpcount")
-    total_fq_count[fqfile] = total_count
-  (result_df, summary_df) = generatefinaltable(result, total_fq_count, lib, dfile)
+    (result_addr,total_count,sublib) = sgcount(args.infile, args.sgstart, args.sgstop, args.trim3,"count","sublib")
+    result[sublib] = pd.read_table(result_addr+".tmpcount")
+    total_fq_count[result_addr] = total_count
   #Get total reads count df
-#BC#  result_total_df = pd.DataFrame(total_fq_count.items(),columns=["filepath","total_reads"])
-#BC#  summary_df = dfile.merge(result_total_df,on="filepath")
-#BC#  #merge results df with lib
-#BC#  result_df = lib.merge(result,on="Sequence",how="left")
-#BC#  result_df = result_df.fillna(0)
-#BC#  #logging.debug(result_df.head())
-#BC#  #make mapping summary df
-#BC#  mapped_total = result_df.iloc[:,3:].groupby("sublib").sum().reset_index()
-#BC#  mapped_total_df = pd.melt(mapped_total, id_vars=['sublib'],var_name=['label'],value_name='mapped_reads')
-#BC#  summary_df = summary_df.merge(mapped_total_df,on=['sublib','label'])
-#BC#  summary_df['mapping_ratio'] = summary_df['mapped_reads']/summary_df['total_reads']
-#BC#  summary_df = summary_df.loc[:,['filepath','label','sublib','total_reads','mapped_reads','mapping_ratio']]
+    (result_df, summary_df) = generatefinaltable(result, total_fq_count, lib, None)
   result_df.to_csv(args.outfile+".count.txt",sep="\t",index=False)
   summary_df.to_csv(args.outfile+".summary.txt",sep="\t",index=False)
 
@@ -88,13 +71,15 @@ def generatefinaltable(resultdic, totaldic, lib, dfile):
   count_columns.insert(2,count_columns.pop(count_columns.index('Sequence')))
   count_columns.insert(3,count_columns.pop(count_columns.index('sublib')))
   count_df = count_df.loc[:,count_columns]
-  #print "final count df"
-  #print count_df.head()
   mapped_total = count_df.iloc[:,3:].groupby("sublib").sum().reset_index()
   mapped_total_df = pd.melt(mapped_total, id_vars=['sublib'],var_name=['label'],value_name='mapped_reads')
   totalread_df = pd.DataFrame(totaldic.items(),columns=["filepath","total_reads"])
-  summary_df = dfile.merge(totalread_df,on="filepath")
-  summary_df = summary_df.merge(mapped_total_df,on=['sublib','label'])
+  if dfile:
+    summary_df = dfile.merge(totalread_df,on="filepath")
+    summary_df = summary_df.merge(mapped_total_df,on=['sublib','label'])
+  else:#single file
+    summary_df = totalread_df
+    summary_df = summary_df.join(mapped_total_df)
   summary_df['mapping_ratio'] = summary_df['mapped_reads']/summary_df['total_reads']
   summary_df = summary_df.loc[:,['filepath','label','sublib','total_reads','mapped_reads','mapping_ratio']]
   return (count_df, summary_df)
@@ -177,7 +162,7 @@ def trimseq(seq,start,stop,trim3=None):
   return trim_seq
 
 
-def sgcount(fqfile,sgstart, sgstop, trim3, label="count",sublib="lib"):
+def sgcount(fqfile,sgstart, sgstop, trim3, label="count",sublib="sublib"):
   '''
   Count sequence frequency in a fastq file.
   Write result in a temp file due to Python multiprocessing hang with huge result. (It can only handle int and string, not a instance of a class)

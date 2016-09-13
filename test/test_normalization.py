@@ -8,7 +8,7 @@ import pandas as pd
 from pandas.util.testing import assert_frame_equal
 
 
-from CRISPR import *
+from sgrsea import *
 
 
 class Test_around(unittest.TestCase):

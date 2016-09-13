@@ -47,6 +47,7 @@ def around(x):
       return int(x)+1
 
 def norm(infile,method):
+  info = infile.loc[:,['sgRNA','Gene']]
   num = infile._get_numeric_data()
   num[num < 0] = 0
   if method == "upperquartile":
@@ -56,10 +57,11 @@ def norm(infile,method):
 		norm_factor = infile.iloc[:,2:].apply(np.sum,axis=0).astype(float)
 		smooth_factor = 10**6 * 1.0
 	#Normalize for sample size	
-  infile.iloc[:,2:] = infile.iloc[:,2:].div(norm_factor/float(smooth_factor),axis="columns")
-  infile.iloc[:,2:] = infile.iloc[:,2:].applymap(lambda x: x+1)
-  infile.iloc[:,2:] = infile.iloc[:,2:].applymap(around)
-  return infile
+  num_norm = num.div(norm_factor/float(smooth_factor),axis="columns")
+  num_norm = num_norm.applymap(lambda x: x+1)
+  num_norm = num_norm.applymap(around)
+  norm_df = info.join(num_norm)
+  return norm_df
 
 def normalization(infile, outfile, method, splitlib):
   if splitlib: #normalize sub lib separately

@@ -36,8 +36,15 @@ def runsgcount(args):
     dfile = pd.read_table(args.designfile)
     libinfo = dfile.loc[:,['lib','sublib']].drop_duplicates()
     lib = makelib(libinfo['lib'].tolist(),libinfo['sublib'].tolist())
-    #lib.to_csv(args.outfile,sep="\t",index=False)
+    lib_df = pd.DataFrame()
+    #for k,v in lib.items():
+    #  lib_df = lib_df.append(v)
+    #lib_df.to_csv(args.outfile+".lib.txt",sep="\t",index=False)
     (result, total_fq_count) = multicount(dfile)
+    for k,v in result.items():
+      print k, v.iloc[0:10,]
+    print total_fq_count
+    (result_df, summary_df) = generatefinaltable(result, total_fq_count, lib, dfile)
   elif args.infile:
     infile = open(args.infile,"r")
     lib = makelib([args.libfile],['sublib'])
@@ -46,75 +53,116 @@ def runsgcount(args):
     (result_addr,total_count) = sgcount(infile, args.sgstart, args.sgstop, args.trim3)
     result = pd.read_table(fqfile+".tmpcount")
     total_fq_count[fqfile] = total_count
+  (result_df, summary_df) = generatefinaltable(result, total_fq_count, lib, dfile)
   #Get total reads count df
-  result_total_df = pd.DataFrame(total_fq_count.items(),columns=["filepath","total_reads"])
-  summary_df = dfile.merge(result_total_df,on="filepath")
-  #merge results df with lib
-  result_df = lib.merge(result,on="Sequence",how="left")
-  result_df = result_df.fillna(0)
-  #logging.debug(result_df.head())
-  mapped_total = result_df.iloc[:,3:].groupby("sublib").sum().reset_index()
-  mapped_total_df = pd.melt(mapped_total, id_vars=['sublib'],var_name=['label'],value_name='mapped_reads')
-  summary_df = summary_df.merge(mapped_total_df,on=['sublib','label'])
-  summary_df['mapping_ratio'] = summary_df['mapped_reads']/summary_df['total_reads']
-  summary_df = summary_df.loc[:,['filepath','label','sublib','total_reads','mapped_reads','mapping_ratio']]
+#BC#  result_total_df = pd.DataFrame(total_fq_count.items(),columns=["filepath","total_reads"])
+#BC#  summary_df = dfile.merge(result_total_df,on="filepath")
+#BC#  #merge results df with lib
+#BC#  result_df = lib.merge(result,on="Sequence",how="left")
+#BC#  result_df = result_df.fillna(0)
+#BC#  #logging.debug(result_df.head())
+#BC#  #make mapping summary df
+#BC#  mapped_total = result_df.iloc[:,3:].groupby("sublib").sum().reset_index()
+#BC#  mapped_total_df = pd.melt(mapped_total, id_vars=['sublib'],var_name=['label'],value_name='mapped_reads')
+#BC#  summary_df = summary_df.merge(mapped_total_df,on=['sublib','label'])
+#BC#  summary_df['mapping_ratio'] = summary_df['mapped_reads']/summary_df['total_reads']
+#BC#  summary_df = summary_df.loc[:,['filepath','label','sublib','total_reads','mapped_reads','mapping_ratio']]
   result_df.to_csv(args.outfile+".count.txt",sep="\t",index=False)
   summary_df.to_csv(args.outfile+".summary.txt",sep="\t",index=False)
 
-def callsgcount(queue,fname,sgstart,sgstop,trim3,label):
-  queue.put(sgcount(fname,sgstart,sgstop,trim3,label))
+def generatefinaltable(resultdic, totaldic, lib, dfile):
+  '''
+    merge df based on sublib  
+  ''' 
+  #Generate count table
+  count_df = pd.DataFrame()
+  for sublibname, c_df in resultdic.items():
+    sublib = lib[sublibname]
+    df = sublib.merge(c_df,on='Sequence',how='left')
+    df = df.fillna(0)
+    count_df = count_df.append(df)
+  #Generate summary table
+  count_columns = count_df.columns.tolist()
+  count_columns.insert(0,count_columns.pop(count_columns.index('sgRNA')))
+  count_columns.insert(1,count_columns.pop(count_columns.index('Gene')))
+  count_columns.insert(2,count_columns.pop(count_columns.index('Sequence')))
+  count_columns.insert(3,count_columns.pop(count_columns.index('sublib')))
+  count_df = count_df.loc[:,count_columns]
+  #print "final count df"
+  #print count_df.head()
+  mapped_total = count_df.iloc[:,3:].groupby("sublib").sum().reset_index()
+  mapped_total_df = pd.melt(mapped_total, id_vars=['sublib'],var_name=['label'],value_name='mapped_reads')
+  totalread_df = pd.DataFrame(totaldic.items(),columns=["filepath","total_reads"])
+  summary_df = dfile.merge(totalread_df,on="filepath")
+  summary_df = summary_df.merge(mapped_total_df,on=['sublib','label'])
+  summary_df['mapping_ratio'] = summary_df['mapped_reads']/summary_df['total_reads']
+  summary_df = summary_df.loc[:,['filepath','label','sublib','total_reads','mapped_reads','mapping_ratio']]
+  return (count_df, summary_df)
+
+def callsgcount(queue,fname,sgstart,sgstop,trim3,label,sublib):
+  queue.put(sgcount(fname,sgstart,sgstop,trim3,label,sublib))
 
 def multicount(dfile):
   '''
-  Parse design file, and call sgcount for each file. 
-  Combine all results to a Pandas dataframe and return
+  Parse design file, and call sgcount for each pair of files. 
+  Combine all results to a Pandas dataframe and return,group by sublib
   '''
   work_num = dfile.shape[0]
   work_queue = Queue()
   workers = []
+
   for index in range(work_num):
     record = dfile.iloc[index,:]
     p = Process(target=callsgcount, args=(work_queue,record['filepath'],
-      record['sgstart'],record['sgstop'],record['trim3'],record['label']))
+      record['sgstart'],record['sgstop'],record['trim3'],record['label'],record['sublib']))
     workers.append(p)
     p.start()
   
   logging.info("Start join process")
   for process in workers:
     process.join()
-  logging.info("All process finished") 
+  
   #get results
   logging.info("Retrive results")
   total_fq_count = {}
-  (fqfilename,total_count) = work_queue.get()#output should be a Pandas df
-  result = pd.read_table(fqfilename+".tmpcount")
-  try:
-    os.remove(fqfilename+".tmpcount")
-  except:
-    logging.warning("Cannot delete "+fqfilename+".tmpcount")
-  total_fq_count[fqfilename] = total_count
-  for i in range(work_num-1):
-    (fqfilename,total_count) = work_queue.get()#output should be a Pandas df
-    result = result.merge(pd.read_table(fqfilename+".tmpcount"),on="Sequence",how="outer")
-    try:
-      os.remove(fqfilename+".tmpcount")
-    except:
-      logging.warning("Cannot delete "+fqfilename+".tmpcount")
+  groupfile = {}
+  for i in range(work_num):
+    (fqfilename,total_count,fsublib) = work_queue.get()#output should be a Pandas df
     total_fq_count[fqfilename] = total_count
-  return (result, total_fq_count)
+    if not groupfile.has_key(fsublib):
+      groupfile[fsublib] = []
+    groupfile[fsublib].append(fqfilename)
+  result_dic ={}
+  for sublibname, files in groupfile.items():
+    result = pd.read_table(files[0]+".tmpcount")
+    try:
+      os.remove(files[0]+".tmpcount")
+    except:
+      logging.warning("Cannot delete "+files[0]+".tmpcount")
+    for fn in files[1:]:
+      result = result.merge(pd.read_table(fn+".tmpcount"),on="Sequence",how="outer")
+      try:
+        os.remove(fn+".tmpcount")
+      except:
+        logging.warning("Cannot delete "+fqfilename+".tmpcount")
+    result_dic[sublibname] = result
+  return (result_dic, total_fq_count)
 
 
 def makelib(libs, sublib):
+  '''
   #Pandas dataframe columns are: ['sgRNA','Gene','Sequence','sublib']
-  df = pd.DataFrame(columns=['sgRNA','Gene','Sequence','sublib'])
+  return a dictionary with label as the key and df as value
+  '''
+  lib_dic = {}
   for i in range(len(libs)):
-    newdf = pd.read_table(libs[i])
-    newdf['sublib'] = [sublib[i]]*newdf.shape[0]
-    df = df.append(newdf)
-  seq_count = df['Sequence'].value_counts()
-  seq_count_df = pd.DataFrame({'Sequence':seq_count.index, 'Count':seq_count.values})
-  df_uniq = df[df['Sequence'].isin(seq_count_df[seq_count_df['Count']==1]['Sequence'])]
-  return df_uniq
+    df = pd.read_table(libs[i])
+    df['sublib'] = [sublib[i]]*df.shape[0]
+    seq_count = df['Sequence'].value_counts()
+    seq_count_df = pd.DataFrame({'Sequence':seq_count.index, 'Count':seq_count.values})
+    df_uniq = df[df['Sequence'].isin(seq_count_df[seq_count_df['Count']==1]['Sequence'])]
+    lib_dic[sublib[i]] = df_uniq
+  return lib_dic
    
 def trimseq(seq,start,stop,trim3=None):
   if len(seq)> start > 0:
@@ -129,7 +177,7 @@ def trimseq(seq,start,stop,trim3=None):
   return trim_seq
 
 
-def sgcount(fqfile,sgstart, sgstop, trim3,label="count"):
+def sgcount(fqfile,sgstart, sgstop, trim3, label="count",sublib="lib"):
   '''
   Count sequence frequency in a fastq file.
   Write result in a temp file due to Python multiprocessing hang with huge result. (It can only handle int and string, not a instance of a class)
@@ -140,7 +188,7 @@ def sgcount(fqfile,sgstart, sgstop, trim3,label="count"):
     total_count += 1
     if total_count % 500000 ==0:
       logging.info("Processed "+fqfile+" "+str(total_count)+" reads...")
-      #break
+      break
     sequence =  trimseq(str(record.seq),sgstart, sgstop, trim3)
     if not seqdic.has_key(sequence):
       seqdic[sequence] = 0
@@ -148,7 +196,7 @@ def sgcount(fqfile,sgstart, sgstop, trim3,label="count"):
   seq_count = pd.DataFrame(seqdic.items(),columns=['Sequence',label])
   logging.info(seq_count.shape)
   seq_count.to_csv(fqfile+".tmpcount",sep="\t",index=False)
-  return (fqfile,total_count)
+  return (fqfile,total_count,sublib)
 
 def main():
   argparser = prepare_argparser()

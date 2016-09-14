@@ -3,18 +3,28 @@
 # usage:
 
 import sys
-import re
 import random
-import string
 import logging
 import copy
 import math
 import numpy as np
 import pandas as pd
+import argparse as ap
 from statsmodels.stats.multitest import multipletests
 
-
 logging.basicConfig(format='%(levelname)s:%(message)s',level=logging.DEBUG)
+
+def prepare_argparser():
+  description = "sgRSEA main stat function"
+  epilog "For command line options of each command, type %(prog)% COMMAND -h"
+  argparser = ap.ArgumentParser(description=description, epilog = epilog)
+  argparser.add_argument("-i","--input",dest = "infile",type=str,required=True, help = "sgRSEA input file, 4 columns")
+  argparser.add_argument("-o","--output",dest = "outfile",type=str,required=True, help = "output file name")
+  argparser.add_argument("-m","--multiplier",dest = "multiplier",type=int, default = 30,required=True, help = "Multiplier to generate background")
+  argparser.add_argument("--bgtag",dest = "bgtag",type=str, help = "Sting to identify control sgRNAs")
+  argparser.add_argument("--bg-row-start",dest = "bgrowstart",type=int,default = -1, help = "Row count of the start of control sgRNA block")
+  argparser.add_argument("--bg-row-stop",dest = "bgrowstart",type=int, default=-1, help = "Row count of the stop of control sgRNA block")
+  return(argparser)
 
 def getBackground(infile,nontag="",tagStart=0,tagStop=0):
   '''Get background data frame from either string tag or row range.
@@ -181,7 +191,7 @@ def getPQ(data_maxmean_std,null_maxmean_std):
   data_maxmean_std['qval'] = multipletests(data_maxmean_std.loc[:,'pval'],method='fdr_bh')[1]
   return data_maxmean_std
 
-def runTest(infile,treatments,controls,nontag,tagStart,tagStop,multiplier):
+def runStatinfer(infile,nontag,tagStart,tagStop,multiplier):
   logging.info("Start to run test.")
   #reset dataframe column names
   old_header = list(infile.columns.values)
@@ -214,8 +224,9 @@ def runTest(infile,treatments,controls,nontag,tagStart,tagStop,multiplier):
   return fdf
 
 def main():
-  infile = pd.read_table(sys.argv[1],sep="\t")
-  runTest(infile,[3],[4],"NonTargeting",0 ,0)
+  argparser = prepare_argparser()
+  args = argparser.parse_args()
+  runStatinfer(args.infile,args.outfile,args.bgtag, args.bgstart, args.bgstop, args.multiplier)
   
 if __name__ == '__main__':
 	main()

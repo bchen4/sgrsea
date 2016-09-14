@@ -173,7 +173,7 @@ def sgcount(fqfile,sgstart, sgstop, trim3, label="count",sublib="sublib"):
     total_count += 1
     if total_count % 500000 ==0:
       logging.info("Processed "+fqfile+" "+str(total_count)+" reads...")
-      break
+      #break
     sequence =  trimseq(str(record.seq),sgstart, sgstop, trim3)
     if not seqdic.has_key(sequence):
       seqdic[sequence] = 0

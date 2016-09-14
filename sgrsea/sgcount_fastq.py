@@ -74,7 +74,7 @@ def generatefinaltable(resultdic, totaldic, lib, dfile):
   mapped_total = count_df.iloc[:,3:].groupby("sublib").sum().reset_index()
   mapped_total_df = pd.melt(mapped_total, id_vars=['sublib'],var_name=['label'],value_name='mapped_reads')
   totalread_df = pd.DataFrame(totaldic.items(),columns=["filepath","total_reads"])
-  if dfile:
+  if dfile!=None:
     summary_df = dfile.merge(totalread_df,on="filepath")
     summary_df = summary_df.merge(mapped_total_df,on=['sublib','label'])
   else:#single file

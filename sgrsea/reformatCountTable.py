@@ -46,8 +46,8 @@ def runReformat(infile, designfile, ofile, t, c):
     control_cols = np.array(c.split(","),dtype=str)
     fnames = []
     for tgroup,cgroup in zip(treatment_cols, control_cols):
-      t_label = dfile[dfile['Group']==tgroup].loc[:,'label'].unique()
-      c_label = dfile[dfile['Group']==cgroup].loc[:,'label'].unique()
+      t_label = dfile[dfile['group']==tgroup].loc[:,'label'].unique()
+      c_label = dfile[dfile['group']==cgroup].loc[:,'label'].unique()
       t_cols = mapcolindex(cfile._get_numeric_data().columns,t_label)
       c_cols = mapcolindex(cfile._get_numeric_data().columns,c_label)
       df = reformat(cfile, t_cols, c_cols)

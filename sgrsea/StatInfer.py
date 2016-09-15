@@ -10,13 +10,13 @@ import math
 import numpy as np
 import pandas as pd
 import argparse as ap
-from statsmodels.stats.multitest import multipletests
+#from statsmodels.stats.multitest import multipletests
 
 logging.basicConfig(format='%(levelname)s:%(message)s',level=logging.DEBUG)
 
 def prepare_argparser():
   description = "sgRSEA main stat function"
-  epilog "For command line options of each command, type %(prog)% COMMAND -h"
+  epilog = "For command line options of each command, type %(prog)% COMMAND -h"
   argparser = ap.ArgumentParser(description=description, epilog = epilog)
   argparser.add_argument("-i","--input",dest = "infile",type=str,required=True, help = "sgRSEA input file, 4 columns")
   argparser.add_argument("-o","--output",dest = "outfile",type=str,required=True, help = "output file name")
@@ -51,53 +51,54 @@ def getBackground(infile,nontag="",tagStart=0,tagStop=0):
   return (dataFile,bgFile)
 
 def addZstat(data_df, pNull):
-  df = copy.copy(data_df)
-  df['dnorm'] =  [math.sqrt(pNull * (1.0 - pNull))] * df.shape[0]
-  df['total'] = (df.loc[:,'treat_1'] + df.loc[:,'ctrl_1']).values
-  df['t_sqrt'] = df.loc[:,'total'].apply(lambda x: math.sqrt(x))
-  df['pmme'] = (df.loc[:,'treat_1']/df.loc[:,'total']).values
-  df['pnull'] = [pNull] * df.shape[0]
-  df['zstat'] = (df.loc[:,'pmme'] - df.loc[:,'pnull']) * df.loc[:,'t_sqrt'] / df.loc[:,'dnorm']
-  df['maxmean'] = [0]*df.shape[0]
-  df['sgcount'] = [0]*df.shape[0]
-  return df.loc[:,['sgRNA','gene','treat_1','ctrl_1','zstat','maxmean','sgcount']]
+  df['zstat'] = df.apply(lambda x: zStat(x,pNull),axis=0)
+  return df
+#BC#  df = copy.copy(data_df)
+#BC#  df['dnorm'] =  [math.sqrt(pNull * (1.0 - pNull))] * df.shape[0]
+#BC#  df['total'] = (df.loc[:,'treat_1'] + df.loc[:,'ctrl_1']).values
+#BC#  df['t_sqrt'] = df.loc[:,'total'].apply(lambda x: math.sqrt(x))
+#BC#  df['pmme'] = (df.loc[:,'treat_1']/df.loc[:,'total']).values
+#BC#  df['pnull'] = [pNull] * df.shape[0]
+#BC#  df['zstat'] = (df.loc[:,'pmme'] - df.loc[:,'pnull']) * df.loc[:,'t_sqrt'] / df.loc[:,'dnorm']
+#BC#  df['maxmean'] = [0]*df.shape[0]
+#BC#  df['sgcount'] = [0]*df.shape[0]
+#BC#  return df.loc[:,['sgRNA','gene','treat_1','ctrl_1','zstat','maxmean','sgcount']]
 
 def dataFilter(dataFile,sg_min = 1):
   '''Get table of sgRNA number per gene distribution. Filter out the genes with sgRNA number less than sg_min'''
-  filter_data = dataFile.groupby('gene').filter(lambda x : len(x)>=sg_min)
+  filter_data = dataFile.groupby('Gene').filter(lambda x : len(x)>=sg_min)
   logging.debug(type(filter_data))
   logging.debug(filter_data.columns.values)
   #filter_data['zstat'] = filter_data.loc[:,['treat_1','ctrl_1']].apply(lambda row: zStat(row.to_frame(['treat_1','ctrl_1']),0.4))
-  gene_label = filter_data.loc[:,'gene']
-  group_data = filter_data.groupby('gene')
-  return (group_data,gene_label)
+  gene_label = filter_data.loc[:,'Gene']
+  #group_data = filter_data.groupby('Gene')
+  return (filter_data,gene_label)
 
-def getNewHeader(treatments,controls):
-  if len(np.intersect1d(treatments,controls))>0:
-    return None
-  header = ['sgRNA','gene']
-  for i in range(len(treatments)+len(controls)):
-    header.append('')
-  count = 0
-  for i in treatments:
-    header[int(i)-1] = 'treat_'+str(count+1)
-    count += 1
-  count = 0
-  for j in controls:
-    header[int(j)-1] = 'ctrl_'+str(count+1)
-    count += 1
-  return header
+#DEP#def getNewHeader(treatments,controls):
+#DEP#  if len(np.intersect1d(treatments,controls))>0:
+#DEP#    return None
+#DEP#  header = ['sgRNA','gene']
+#DEP#  for i in range(len(treatments)+len(controls)):
+#DEP#    header.append('')
+#DEP#  count = 0
+#DEP#  for i in treatments:
+#DEP#    header[int(i)-1] = 'treat_'+str(count+1)
+#DEP#    count += 1
+#DEP#  count = 0
+#DEP#  for j in controls:
+#DEP#    header[int(j)-1] = 'ctrl_'+str(count+1)
+#DEP#    count += 1
+#DEP#  return header
 
-def pMME(treat,ctrl):
-  '''Input are two pd.Series'''
-  sum_treat = treat.sum().item()
-  sum_ctrl = ctrl.sum().item()
-  sum_all = sum_treat + sum_ctrl
+def pMME(df):
+  '''1st numeric col is treatment and 2nd numeric col is control'''
+  ndf = df._get_numeric_data()
+  sum_col = ndf.sum(axis=1)
   try:
-    pmme = sum_treat * 1.0 / sum_all
+    pmme = sum_col[0].item() * 1.0 / sum_col.sum()
   except ZeroDivisionError:
     #logging.warning("ZeroDivisionError in pMME calculation, which indicates no reads count for treatment. Return 0 instead. Continuing")
-    pmme = 0.0
+    pmme = -1
   if not (0.0<=pmme<=1.0):
     logging.error("pMME range error. Exit")
     sys.exit(1)
@@ -107,32 +108,24 @@ def zStat(sg_row,pNull):
   if pNull == 0 or pNull ==1:
     return None
   else:
-    zscore = (pMME(sg_row.treat_1,sg_row.ctrl_1)-pNull) * math.sqrt(sg_row.sum(0).sum()) / math.sqrt(pNull*(1-pNull)) 
+    zscore = (pMME(sg_row)-pNull) * math.sqrt(sg_row.sum(0).sum()) / math.sqrt(pNull*(1-pNull)) 
     return zscore
 
-def maxMean(gene_df):
-  scores = gene_df.loc[:,'zstat']
+def maxMean(gene_zstat):
+  scores = gene_zstat
   sc_po = sum(scores[scores>=0])*1.0
   sc_ne = sum(scores[scores<0])*1.0
   if abs(sc_po) >= abs(sc_ne):
-    return sc_po/gene_df.shape[0]
+    return sc_po/len(scores)
   else:
-    return sc_ne/gene_df.shape[0]
+    return sc_ne/len(scores)
 
-def getMatrixMaxmean(gene_group):
-  '''Gene group is a groupby object.
-     This function returns a dataframe with 'gene', 'maxmean', 'sgCount'    
+def getMatrixMaxmean(filtered_zdf):
   '''
-  genes = []
-  maxmeans = []
-  sgCount = []
-  for g, gdf in gene_group:
-    maxmeans.append(maxMean(gdf))
-    genes.append(g)
-    sgCount.append(gdf.shape[0])
-  #logging.debug(maxmean_df.head(10))
-      #sgCount.append(gene_matrix[g].shape[0])
-  maxmean_df = pd.DataFrame({'gene':genes,'maxmean':maxmeans,'sgcount':sgCount})
+     This function returns a dataframe with 'Gene', 'maxmean', 'sgCount'    
+  '''
+  maxmean_df = filtered_zdf.groupby("Gene").agg({'zstat':maxMean,'sgRNA':'count'}).reset_index()
+  maxmean_df.columns = ["Gene","maxmean","sgCount"]
   logging.debug(maxmean_df.head(10))
   return maxmean_df
 
@@ -198,7 +191,9 @@ def runStatinfer(infile,nontag,tagStart,tagStop,multiplier):
   #infile.columns = new_header
   if (len(nontag)!=0) or (tagStart>0 and tagStop>0):
     (dataFile,bgFile) = getBackground(infile,nontag,tagStart,tagStop)
-  p0 = pMME(bgFile.loc[:,['treat_1']],bgFile.loc[:,['ctrl_1']])
+    p0 = pMME(bgFile)
+  else:#Use dataset as background
+    p0 = pMME(dataFile)
   if p0 ==0 or p0 ==1:
     logging.error("pMME for background equals to 0/1, indicating no counts for treatment or control. Please check your data. Exit.")
     sys.exit(1)
@@ -206,10 +201,10 @@ def runStatinfer(infile,nontag,tagStart,tagStop,multiplier):
   #logging.debug(dataFile.head(10))
   #dataFile.to_csv("test_real_zscore.txt",sep="\t",header=True,index=False)
   bgFile = addZstat(bgFile, p0)
-  (treat_group,genelist) = dataFilter(dataFile,1)
+  (filtered_data,genelist) = dataFilter(dataFile,1)
   #dataStat = treat_group.size()
   #logging.info("Calculating treatment maxmean...")
-  data_maxmean_df = getMatrixMaxmean(treat_group)
+  data_maxmean_df = getMatrixMaxmean(filtered_data)
   #data_maxmean_df.to_csv("test_real_maxmean.txt",sep="\t",header=True,index=False)
   #logging.info("Sampling null distribution...")
   null_maxmean_df = maxmeanSampleNull(genelist,bgFile,p0,multiplier)
@@ -226,7 +221,10 @@ def runStatinfer(infile,nontag,tagStart,tagStop,multiplier):
 def main():
   argparser = prepare_argparser()
   args = argparser.parse_args()
-  runStatinfer(args.infile,args.outfile,args.bgtag, args.bgrowstart, args.bgrowstop, args.multiplier)
+  infile = pd.read_table(args.infile)
+  df = getMatrixMaxmean(infile)
+  df.to_csv(args.outfile,sep="\t",index=False)
+  #runStatinfer(args.infile,args.outfile,args.bgtag, args.bgrowstart, args.bgrowstop, args.multiplier)
   
 if __name__ == '__main__':
 	main()

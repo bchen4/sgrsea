@@ -74,21 +74,6 @@ def dataFilter(dataFile,sg_min = 1):
   #group_data = filter_data.groupby('Gene')
   return (filter_data,gene_label)
 
-#DEP#def getNewHeader(treatments,controls):
-#DEP#  if len(np.intersect1d(treatments,controls))>0:
-#DEP#    return None
-#DEP#  header = ['sgRNA','gene']
-#DEP#  for i in range(len(treatments)+len(controls)):
-#DEP#    header.append('')
-#DEP#  count = 0
-#DEP#  for i in treatments:
-#DEP#    header[int(i)-1] = 'treat_'+str(count+1)
-#DEP#    count += 1
-#DEP#  count = 0
-#DEP#  for j in controls:
-#DEP#    header[int(j)-1] = 'ctrl_'+str(count+1)
-#DEP#    count += 1
-#DEP#  return header
 
 def pMME(df):
   '''1st numeric col is treatment and 2nd numeric col is control'''
@@ -139,12 +124,12 @@ def sampleNull(genelist,bgFile):
   return group_sample
 
 
-def maxmeanSampleNull(treat_stat,bgFile,pNull,multiplier=10):
+def maxmeanSampleNull(genelist,bgFile,multiplier=10):
   '''Call sampleNull() multiplier times. Only keep maxmean dataframe to save memory.'''
   null_maxmean = pd.DataFrame()
   np.random.seed(8512)
   for i in range(multiplier):
-    null_group = sampleNull(treat_stat,bgFile)
+    null_group = sampleNull(genelist,bgFile)
     newdf = getMatrixMaxmean(null_group,pNull)
     null_maxmean = null_maxmean.append(newdf)
   logging.debug("Null_maxmean_df")
@@ -176,12 +161,16 @@ def standardizeDF(maxmean_df,sFactors):
   
 def pvalue(tn,smm_null):
   '''smm_null is a dataframe'''
-  p = (smm_null[smm_null['sMaxmean']>tn].shape[0]+1.0)/smm_null.shape[0]
-  return p
+  pos_p = (smm_null[smm_null['sMaxmean']>tn].shape[0]+1.0)/(1.0+smm_null.shape[0])
+  return pos_p
 
 def getPQ(data_maxmean_std,null_maxmean_std):
-  data_maxmean_std['pval'] = data_maxmean_std.apply(lambda x: pvalue(x['sMaxmean'],null_maxmean_std),axis=1)
-  data_maxmean_std['qval'] = multipletests(data_maxmean_std.loc[:,'pval'],method='fdr_bh')[1]
+  data_maxmean_std['pos_p'] = data_maxmean_std.apply(lambda x: pvalue(x['sMaxmean'],null_maxmean_std),axis=1)
+  data_maxmean_std['neg_p'] = 1.0 -data_maxmean_std['pos_p'] 
+  data_maxmean_std['pos_q'] = multipletests(data_maxmean_std.loc[:,'pos_p'],method='fdr_bh')[1]
+  data_maxmean_std['neg_q'] = multipletests(data_maxmean_std.loc[:,'neg_p'],method='fdr_bh')[1]
+  data_maxmean_std['pos_rank'] = data_maxmean_std['pos_p'].rank()
+  data_maxmean_std['neg_rank'] = data_maxmean_std['neg_p'].rank()
   return data_maxmean_std
 
 def runStatinfer(infile,nontag,tagStart,tagStop,multiplier):
@@ -207,9 +196,9 @@ def runStatinfer(infile,nontag,tagStart,tagStop,multiplier):
   data_maxmean_df = getMatrixMaxmean(filtered_data)
   #data_maxmean_df.to_csv("test_real_maxmean.txt",sep="\t",header=True,index=False)
   #logging.info("Sampling null distribution...")
-  null_maxmean_df = maxmeanSampleNull(genelist,bgFile,p0,multiplier)
+  null_maxmean_df = maxmeanSampleNull(genelist,bgFile,multiplier)
   #logging.debug("Get standardize factors")
-  factor_df = standardizeFactor(data_maxmean_df)
+  factor_df = standardizeFactor(null_maxmean_df)
   logging.debug(factor_df)
   #logging.info("Standardization...")
   data_sdf = standardizeDF(data_maxmean_df,factor_df)

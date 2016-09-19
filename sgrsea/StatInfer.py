@@ -53,16 +53,6 @@ def getBackground(infile,nontag="",tagStart=0,tagStop=0):
 def addZstat(data_df, pNull):
   df['zstat'] = df.apply(lambda x: zStat(x,pNull),axis=0)
   return df
-#BC#  df = copy.copy(data_df)
-#BC#  df['dnorm'] =  [math.sqrt(pNull * (1.0 - pNull))] * df.shape[0]
-#BC#  df['total'] = (df.loc[:,'treat_1'] + df.loc[:,'ctrl_1']).values
-#BC#  df['t_sqrt'] = df.loc[:,'total'].apply(lambda x: math.sqrt(x))
-#BC#  df['pmme'] = (df.loc[:,'treat_1']/df.loc[:,'total']).values
-#BC#  df['pnull'] = [pNull] * df.shape[0]
-#BC#  df['zstat'] = (df.loc[:,'pmme'] - df.loc[:,'pnull']) * df.loc[:,'t_sqrt'] / df.loc[:,'dnorm']
-#BC#  df['maxmean'] = [0]*df.shape[0]
-#BC#  df['sgcount'] = [0]*df.shape[0]
-#BC#  return df.loc[:,['sgRNA','gene','treat_1','ctrl_1','zstat','maxmean','sgcount']]
 
 def dataFilter(dataFile,sg_min = 1):
   '''Get table of sgRNA number per gene distribution. Filter out the genes with sgRNA number less than sg_min'''
@@ -71,7 +61,6 @@ def dataFilter(dataFile,sg_min = 1):
   logging.debug(filter_data.columns.values)
   #filter_data['zstat'] = filter_data.loc[:,['treat_1','ctrl_1']].apply(lambda row: zStat(row.to_frame(['treat_1','ctrl_1']),0.4))
   gene_label = filter_data.loc[:,'Gene']
-  #group_data = filter_data.groupby('Gene')
   return (filter_data,gene_label)
 
 
@@ -186,16 +175,20 @@ def runStatinfer(infile,nontag,tagStart,tagStop,multiplier):
   if p0 ==0 or p0 ==1:
     logging.error("pMME for background equals to 0/1, indicating no counts for treatment or control. Please check your data. Exit.")
     sys.exit(1)
+  
   dataFile = addZstat(dataFile,p0)
   #logging.debug(dataFile.head(10))
   #dataFile.to_csv("test_real_zscore.txt",sep="\t",header=True,index=False)
-  bgFile = addZstat(bgFile, p0)
   (filtered_data,genelist) = dataFilter(dataFile,1)
   #dataStat = treat_group.size()
   #logging.info("Calculating treatment maxmean...")
   data_maxmean_df = getMatrixMaxmean(filtered_data)
   #data_maxmean_df.to_csv("test_real_maxmean.txt",sep="\t",header=True,index=False)
   #logging.info("Sampling null distribution...")
+  if isinstance(bgFile, pd.DataFrame): 
+    bgFile = addZstat(bgFile, p0)
+  else:
+    bgFile = filtered_data
   null_maxmean_df = maxmeanSampleNull(genelist,bgFile,multiplier)
   #logging.debug("Get standardize factors")
   factor_df = standardizeFactor(null_maxmean_df)
@@ -211,9 +204,9 @@ def main():
   argparser = prepare_argparser()
   args = argparser.parse_args()
   infile = pd.read_table(args.infile)
-  df = getMatrixMaxmean(infile)
-  df.to_csv(args.outfile,sep="\t",index=False)
-  #runStatinfer(args.infile,args.outfile,args.bgtag, args.bgrowstart, args.bgrowstop, args.multiplier)
+  #df = getMatrixMaxmean(infile)
+  #df.to_csv(args.outfile,sep="\t",index=False)
+  runStatinfer(args.infile,args.outfile,args.bgtag, args.bgrowstart, args.bgrowstop, args.multiplier)
   
 if __name__ == '__main__':
 	main()

@@ -51,7 +51,7 @@ def getBackground(infile,nontag="",tagStart=0,tagStop=0):
   return (dataFile,bgFile)
 
 def addZstat(data_df, pNull):
-  df['zstat'] = df.apply(lambda x: zStat(x,pNull),axis=0)
+  data_df['zstat'] = data_df.apply(lambda x: zStat(x,pNull),axis=0)
   return df
 
 def dataFilter(dataFile,sg_min = 1):
@@ -67,7 +67,7 @@ def dataFilter(dataFile,sg_min = 1):
 def pMME(df):
   '''1st numeric col is treatment and 2nd numeric col is control'''
   ndf = df._get_numeric_data()
-  sum_col = ndf.sum(axis=1)
+  sum_col = ndf.sum(axis=0)
   try:
     pmme = sum_col[0].item() * 1.0 / sum_col.sum()
   except ZeroDivisionError:
@@ -171,19 +171,20 @@ def runStatinfer(infile,outfile,nontag,tagStart,tagStop,multiplier):
     (dataFile,bgFile) = getBackground(infile,nontag,tagStart,tagStop)
     p0 = pMME(bgFile)
   else:#Use dataset as background
+    dataFile = pd.read_table(infile)
     p0 = pMME(dataFile)
   if p0 ==0 or p0 ==1:
     logging.error("pMME for background equals to 0/1, indicating no counts for treatment or control. Please check your data. Exit.")
     sys.exit(1)
-  
+  logging.debug(p0) 
   dataFile = addZstat(dataFile,p0)
   #logging.debug(dataFile.head(10))
-  #dataFile.to_csv("test_real_zscore.txt",sep="\t",header=True,index=False)
+  dataFile.to_csv("test_real_zscore.txt",sep="\t",header=True,index=False)
   (filtered_data,genelist) = dataFilter(dataFile,1)
   #dataStat = treat_group.size()
   #logging.info("Calculating treatment maxmean...")
   data_maxmean_df = getMatrixMaxmean(filtered_data)
-  #data_maxmean_df.to_csv("test_real_maxmean.txt",sep="\t",header=True,index=False)
+  data_maxmean_df.to_csv("test_real_maxmean.txt",sep="\t",header=True,index=False)
   #logging.info("Sampling null distribution...")
   if isinstance(bgFile, pd.DataFrame): 
     bgFile = addZstat(bgFile, p0)
@@ -204,9 +205,10 @@ def main():
   argparser = prepare_argparser()
   args = argparser.parse_args()
   infile = pd.read_table(args.infile)
+  print pMME(infile)
   #df = getMatrixMaxmean(infile)
   #df.to_csv(args.outfile,sep="\t",index=False)
-  runStatinfer(args.infile,args.outfile,args.bgtag, args.bgrowstart, args.bgrowstop, args.multiplier)
+  #runStatinfer(args.infile,args.outfile,args.bgtag, args.bgrowstart, args.bgrowstop, args.multiplier)
   
 if __name__ == '__main__':
 	main()

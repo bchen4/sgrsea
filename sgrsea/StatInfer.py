@@ -162,7 +162,7 @@ def getPQ(data_maxmean_std,null_maxmean_std):
   data_maxmean_std['neg_rank'] = data_maxmean_std['neg_p'].rank()
   return data_maxmean_std
 
-def runStatinfer(infile,nontag,tagStart,tagStop,multiplier):
+def runStatinfer(infile,outfile,nontag,tagStart,tagStop,multiplier):
   #reset dataframe column names
   #old_header = list(infile.columns.values)
   #new_header = getNewHeader(treatments,controls)
@@ -198,7 +198,7 @@ def runStatinfer(infile,nontag,tagStart,tagStop,multiplier):
   null_sdf = standardizedDF(null_maxmean_df,factor_df)
   #sDf.to_csv("test_real_standardize.txt",sep="\t",header=True,index=False)
   fdf = getPQ(data_sdf,null_sdf)
-  return fdf
+  fdf.to_csv(outfile,sep="\t",index=False)
 
 def main():
   argparser = prepare_argparser()

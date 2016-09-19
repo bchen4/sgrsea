@@ -51,8 +51,9 @@ def getBackground(infile,nontag="",tagStart=0,tagStop=0):
   return (dataFile,bgFile)
 
 def addZstat(data_df, pNull):
-  data_df['zstat'] = data_df.apply(lambda x: zStat(x,pNull),axis=0)
-  return df
+  data_df['pmme'] = data_df['treat']/(data_df['treat']+data_df['ctrl'])
+  data_df['zstat'] = data_df._get_numeric_data().apply(lambda x: zStat(x,pNull),axis=1)
+  return data_df
 
 def dataFilter(dataFile,sg_min = 1):
   '''Get table of sgRNA number per gene distribution. Filter out the genes with sgRNA number less than sg_min'''
@@ -64,12 +65,12 @@ def dataFilter(dataFile,sg_min = 1):
   return (filter_data,gene_label)
 
 
-def pMME(df):
+def pMME(treat, ctrl):
   '''1st numeric col is treatment and 2nd numeric col is control'''
-  ndf = df._get_numeric_data()
-  sum_col = ndf.sum(axis=0)
+  t_total = sum(treat)
+  c_total = sum(ctrl)
   try:
-    pmme = sum_col[0].item() * 1.0 / sum_col.sum()
+    pmme = t_total * 1.0 / (t_total+c_total)
   except ZeroDivisionError:
     #logging.warning("ZeroDivisionError in pMME calculation, which indicates no reads count for treatment. Return 0 instead. Continuing")
     pmme = -1
@@ -79,10 +80,11 @@ def pMME(df):
   return pmme
 
 def zStat(sg_row,pNull):
+  #logging(sg_row)
   if pNull == 0 or pNull ==1:
     return None
   else:
-    zscore = (pMME(sg_row)-pNull) * math.sqrt(sg_row.sum(0).sum()) / math.sqrt(pNull*(1-pNull)) 
+    zscore = (sg_row.pmme-pNull) * math.sqrt(sg_row.treat+sg_row.ctrl) / math.sqrt(pNull*(1-pNull)) 
     return zscore
 
 def maxMean(gene_zstat):
@@ -163,20 +165,17 @@ def getPQ(data_maxmean_std,null_maxmean_std):
   return data_maxmean_std
 
 def runStatinfer(infile,outfile,nontag,tagStart,tagStop,multiplier):
-  #reset dataframe column names
-  #old_header = list(infile.columns.values)
-  #new_header = getNewHeader(treatments,controls)
-  #infile.columns = new_header
   if (len(nontag)!=0) or (tagStart>0 and tagStop>0):
     (dataFile,bgFile) = getBackground(infile,nontag,tagStart,tagStop)
     p0 = pMME(bgFile)
   else:#Use dataset as background
     dataFile = pd.read_table(infile)
-    p0 = pMME(dataFile)
+    p0 = pMME(dataFile.iloc[:,2],dataFile.iloc[:,3])
   if p0 ==0 or p0 ==1:
     logging.error("pMME for background equals to 0/1, indicating no counts for treatment or control. Please check your data. Exit.")
     sys.exit(1)
   logging.debug(p0) 
+  dataFile.columns = ['sgRNA','Gene','treat','ctrl']
   dataFile = addZstat(dataFile,p0)
   #logging.debug(dataFile.head(10))
   dataFile.to_csv("test_real_zscore.txt",sep="\t",header=True,index=False)
@@ -186,29 +185,29 @@ def runStatinfer(infile,outfile,nontag,tagStart,tagStop,multiplier):
   data_maxmean_df = getMatrixMaxmean(filtered_data)
   data_maxmean_df.to_csv("test_real_maxmean.txt",sep="\t",header=True,index=False)
   #logging.info("Sampling null distribution...")
-  if isinstance(bgFile, pd.DataFrame): 
-    bgFile = addZstat(bgFile, p0)
-  else:
-    bgFile = filtered_data
-  null_maxmean_df = maxmeanSampleNull(genelist,bgFile,multiplier)
-  #logging.debug("Get standardize factors")
-  factor_df = standardizeFactor(null_maxmean_df)
-  logging.debug(factor_df)
-  #logging.info("Standardization...")
-  data_sdf = standardizeDF(data_maxmean_df,factor_df)
-  null_sdf = standardizedDF(null_maxmean_df,factor_df)
-  #sDf.to_csv("test_real_standardize.txt",sep="\t",header=True,index=False)
-  fdf = getPQ(data_sdf,null_sdf)
-  fdf.to_csv(outfile,sep="\t",index=False)
+#BC#  if isinstance(bgFile, pd.DataFrame): 
+#BC#    bgFile = addZstat(bgFile, p0)
+#BC#  else:
+#BC#    bgFile = filtered_data
+#BC#  null_maxmean_df = maxmeanSampleNull(genelist,bgFile,multiplier)
+#BC#  #logging.debug("Get standardize factors")
+#BC#  factor_df = standardizeFactor(null_maxmean_df)
+#BC#  logging.debug(factor_df)
+#BC#  #logging.info("Standardization...")
+#BC#  data_sdf = standardizeDF(data_maxmean_df,factor_df)
+#BC#  null_sdf = standardizedDF(null_maxmean_df,factor_df)
+#BC#  #sDf.to_csv("test_real_standardize.txt",sep="\t",header=True,index=False)
+#BC#  fdf = getPQ(data_sdf,null_sdf)
+#BC#  fdf.to_csv(outfile,sep="\t",index=False)
 
 def main():
   argparser = prepare_argparser()
   args = argparser.parse_args()
-  infile = pd.read_table(args.infile)
-  print pMME(infile)
+  #infile = pd.read_table(args.infile)
+  #print pMME(infile)
   #df = getMatrixMaxmean(infile)
   #df.to_csv(args.outfile,sep="\t",index=False)
-  #runStatinfer(args.infile,args.outfile,args.bgtag, args.bgrowstart, args.bgrowstop, args.multiplier)
+  runStatinfer(args.infile,args.outfile,args.bgtag, args.bgrowstart, args.bgrowstop, args.multiplier)
   
 if __name__ == '__main__':
 	main()

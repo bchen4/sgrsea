@@ -15,7 +15,7 @@ def prepare_argparser():
   epilog = "For command line options of each command, type %(prog)% COMMAND -h"
   argparser = ap.ArgumentParser(description=description, epilog = epilog)
   argparser.add_argument("-i","--input",dest = "infile",type=str, required=True, help="input count file matrix")
-  argparser.add_argument("-m","--method",dest="method", default="total", type=str,help ="design file", choices=['total','median','upperquantile'])
+  argparser.add_argument("--normalize-method",dest="method", default="total", type=str,help ="design file", choices=['total','median','upperquantile'])
   argparser.add_argument("-o","--output",dest = "outfile",type=str,required=True, help="output")
   argparser.add_argument("--split-lib",dest = "splitlib",action='store_true', help="Lib A and B are sequenced separately")
   return argparser

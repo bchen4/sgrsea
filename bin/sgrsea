@@ -24,8 +24,7 @@ def prepare_argparser():
   subparsers = argparser.add_subparsers( dest = 'subcommand_name' )
   
   #command for run the whole suite
-  #add_run_parser(subparsers)
-  #subc_run = subparsers.add_parser("run", help="Run the whole program from fastq to result")
+  add_run_parser(subparsers)
   #command for sgcount
   add_count_parser(subparsers)
   #command for normalization
@@ -33,6 +32,26 @@ def prepare_argparser():
   #command for stattest
   add_stattest_parser(subparsers)
   return(argparser)
+
+def add_run_parser(subparsers):
+  '''Add argument parsers for running whole suite
+  '''
+  subc_run = subparsers.add_parser("run", help="Run the whole program from fastq to result")
+  group = subc_run.add_mutually_exclusive_group()
+  group.add_argument("-i","--input",dest = "infile",type=str, help="input fastq")
+  group.add_argument("-d","--design",dest="designfile",type=str,help = "design file")
+  subc_run.add_argument("-o","--output",dest = "outfile",type=str,required=True, help="output")
+  subc_run.add_argument("-l","--library",dest="libfile",type=str, help = "Gene locus in bed format")
+  subc_run.add_argument("--sgstart",dest="sgstart",type=int, default=-1,help = "The first nucleotide sgRNA starts. 1-index")
+  subc_run.add_argument("--sgstop",dest="sgstop",type=int, default=-1,help = "The last nucleotide sgRNA starts. 1-index")
+  subc_run.add_argument("--trim3",dest="trim3",type=str,help = "The trimming pattern from 3'. This pattern and the following sequence will be removed")
+  subc_run.add_argument("--normalize_method",dest="method", default="total", type=str,help ="design file", choices=['total','median','upperquantile'])
+  subc_run.add_argument("--split-lib",dest = "splitlib",action='store_true', help="Lib A and B are sequenced separately")
+  subc_run.add_argument("--multiplier",dest = "multiplier",type=int, default = 30,required=True, help = "Multiplier to generate background")
+  subc_run.add_argument("--bgtag",dest = "bgtag",type=str, default = "",help = "Sting to identify control sgRNAs")
+  subc_run.add_argument("--bg-row-start",dest = "bgrowstart",type=int,default = -1, help = "Row count of the start of control sgRNA block")
+  subc_run.add_argument("--bg-row-stop",dest = "bgrowstop",type=int, default=-1, help = "Row count of the stop of control sgRNA block")
+
 
 def add_count_parser(subparsers):
   '''Add argument parsers for sgcount
@@ -53,7 +72,7 @@ def add_normalization_parser(subparsers):
  '''
  subc_normalization = subparsers.add_parser("normalization", help = "Normalize sgRNA count matrix")
  subc_normalization.add_argument("-i","--input",dest = "infile",type=str, required=True, help="input count file matrix")
- subc_normalization.add_argument("-m","--method",dest="method", default="total", type=str,help ="design file", choices=['total','median','upperquantile'])
+ subc_normalization.add_argument("--normalize-method",dest="method", default="total", type=str,help ="design file", choices=['total','median','upperquantile'])
  subc_normalization.add_argument("-o","--output",dest = "outfile",type=str,required=True, help="output")
  subc_normalization.add_argument("--split-lib",dest = "splitlib",action='store_true', help="Lib A and B are sequenced separately")
  return
@@ -64,7 +83,7 @@ def add_stattest_parser(subparsers):
   subc_stattest = subparsers.add_parser("stattest", help="Identify significant genes from normalized count table")
   subc_stattest.add_argument("-i","--input",dest = "infile",type=str,required=True, help = "sgRSEA input file, 4 columns")
   subc_stattest.add_argument("-o","--output",dest = "outfile",type=str,required=True, help = "output file name")
-  subc_stattest.add_argument("-m","--multiplier",dest = "multiplier",type=int, default = 30,required=True, help = "Multiplier to generate background")
+  subc_stattest.add_argument("--multiplier",dest = "multiplier",type=int, default = 30,required=True, help = "Multiplier to generate background")
   subc_stattest.add_argument("--bgtag",dest = "bgtag",type=str, default = "",help = "Sting to identify control sgRNAs")
   subc_stattest.add_argument("--bg-row-start",dest = "bgrowstart",type=int,default = -1, help = "Row count of the start of control sgRNA block")
   subc_stattest.add_argument("--bg-row-stop",dest = "bgrowstop",type=int, default=-1, help = "Row count of the stop of control sgRNA block")

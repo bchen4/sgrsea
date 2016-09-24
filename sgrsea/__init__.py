@@ -1,1 +1,1 @@
-__all__= ["Normalization","StatInfer"]
+__all__= ["Normalization","StatInfer","sgcount_fastq"]

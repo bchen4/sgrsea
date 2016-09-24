@@ -7,8 +7,11 @@ import os
 import pandas as pd
 import numpy as np
 import locale
+from sgrsea import *
+from sgrsea import sgcount_fastq
+import inspect
+print inspect.getfile(sgrsea)
 
-from crispr import *
 logging.basicConfig(format='%(levelname)s:%(message)s',level=logging.DEBUG)
 
 
@@ -16,12 +19,12 @@ def prepare_argparser():
   description = "sgRSEA: identify significant genes in CRISPR-Cas9 experiment"
   epilog = "For command line options of each command, type %(prog)s COMMAND -h"
   argparser = argparse.ArgumentParser(description=description, epilog = epilog)
-  argparser.add_argument("--version", action="version", version="%(prog)s"+sgrsea_VERSION)
+#  argparser.add_argument("--version", action="version", version="%(prog)s"+sgrsea_VERSION)
   subparsers = argparser.add_subparsers( dest = 'subcommand_name' )
-  add_count_parser( subparsers )
-  add_normalize_parser( subparsers)
-  add_stattest_parser( subparsers)
-  add_run_parser( subparser )
+  subc_run = subparsers.add_parser("run", help="Run the whole program from fastq to result")
+  subc_count = subparsers.add_parser("count", help="Get sgRNA count matrix")
+  subc_normalize = subparsers.add_parser("normalize", help="Normalize count matrix")
+  subc_stattest = subparsers.add_parser("stattest", help="Identify significant genes from normalized count table")
 #BC#  argparser.add_argument("-i","--input",dest = "infile", type = str, required = True, help = "Input count table")
 #BC#  argparser.add_argument("-t","--treatment",dest = "treatcol", type = str, required = True, default = 3 ,help = "The column numbers of treatment. -t 3,4,5")
 #BC#  argparser.add_argument("-c","--control",dest="ctrlcol",type=str,required=True, default=4, help = "The column number of control. -c 6,7,8")
@@ -32,6 +35,8 @@ def prepare_argparser():
 #BC#  argparser.add_argument("-m","--multiplier",dest="multiplier", type = int, default = 10, help = "Count of input file sized Null distribution. Default = 10")
 #BC#  argparser.add_argument("-p","--pvalue",dest = "pvalue", type = float,required = False, default = 0.05, help = "FDR cutoff for significant genes. Default is 0.05")
   return(argparser)
+
+
 
 def runCrispr(args,treatments,controls,tag="",tagStart=0,tagStop=0):
   try:
@@ -64,6 +69,7 @@ def main():
   args = arg_parser.parse_args()
   subcommand  = args.subcommand_name
   if subcommand == "count":
+    import sgcount_fastq
     sgrsea.sgcount_fastq.run(args)
   elif subcommand == "normalize":
     sgrsea.Normalization.run(args)

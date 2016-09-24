@@ -45,21 +45,21 @@ command_classes = {}
 #  sys.exit(1)
 
 def main():
-  if not 2.7 < float(sys.version[:3]) < 2.8:
-    sys.stderr.write("CRITICAL: Python version must be 2.7!\n")
-    sys.exit(1)
+  #if not 2.7 < float(sys.version[:3]) < 2.8:
+  #  sys.stderr.write("CRITICAL: Python version must be 2.7!\n")
+  #  sys.exit(1)
 
   #ext_modules = 
-setup(name='crispr',
+  setup(name='sgrsea',
       version='0.1',
       description='Identify enriched genes in CRISPR-Cas9 experiment',
-      url='https://github.com/QBRC/Crispr',
+      #url='https://github.com/QBRC/Crispr',
       author='Beibei Chen',
       author_email='beibei.chen@utsouthwestern.edu',
       license='BSD',
-      package_dir={'CRISPR':'CRISPR','bin':'bin','test':'test'},
-      packages=['CRISPR','bin','test'],
-      scripts=['bin/crispr',
+      package_dir={'sgrsea':'sgrsea'},#,'bin':'bin','test':'test'},
+      packages=['sgrsea'],
+      scripts=['bin/sgrsea.py',
         ],
       classifiers=[
         'Development Status :: 1 - Dev',
@@ -81,7 +81,7 @@ setup(name='crispr',
       #ext_modules = ext_modules
       )
 
-if __name_ == '__main__':
+if __name__ == '__main__':
   main()
 
 

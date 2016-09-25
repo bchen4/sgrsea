@@ -1,0 +1,151 @@
+#! /usr/bin/python
+import sys
+sys.path.insert(1,'../')
+
+import argparse
+import logging
+import os
+import pandas as pd
+import numpy as np
+import locale
+import sgrsea
+#from sgrsea import sgcount
+#import inspect
+#print inspect.getfile(sgrsea)
+
+logging.basicConfig(format='%(levelname)s:%(message)s',level=logging.DEBUG)
+
+
+def prepare_argparser():
+  description = "sgRSEA: identify significant genes in CRISPR-Cas9 experiment"
+  epilog = "For command line options of each command, type %(prog)s COMMAND -h"
+  argparser = argparse.ArgumentParser(description=description, epilog = epilog)
+#  argparser.add_argument("--version", action="version", version="%(prog)s"+sgrsea_VERSION)
+  subparsers = argparser.add_subparsers( dest = 'subcommand_name' )
+  
+  #command for run the whole suite
+  #add_run_parser(subparsers)
+  #subc_run = subparsers.add_parser("run", help="Run the whole program from fastq to result")
+  #command for sgcount
+  add_count_parser(subparsers)
+  #command for normalization
+  add_normalization_parser(subparsers)
+  #command for stattest
+  add_stattest_parser(subparsers)
+  return(argparser)
+
+def add_count_parser(subparsers):
+  '''Add argument parsers for sgcount
+  '''
+  subc_count = subparsers.add_parser("count", help="Get sgRNA count matrix")
+  group = subc_count.add_mutually_exclusive_group()
+  group.add_argument("-i","--input",dest = "infile",type=str, help="input fastq")
+  group.add_argument("-d","--design",dest="designfile",type=str,help = "design file")
+  subc_count.add_argument("-o","--output",dest = "outfile",type=str,required=True, help="output")
+  subc_count.add_argument("-l","--library",dest="libfile",type=str, help = "Gene locus in bed format")
+  subc_count.add_argument("--sgstart",dest="sgstart",type=int, default=-1,help = "The first nucleotide sgRNA starts. 1-index")
+  subc_count.add_argument("--sgstop",dest="sgstop",type=int, default=-1,help = "The last nucleotide sgRNA starts. 1-index")
+  subc_count.add_argument("--trim3",dest="trim3",type=str,help = "The trimming pattern from 3'. This pattern and the following sequence will be removed")
+  return
+
+def add_normalization_parser(subparsers):
+ '''Add argument parser for normalization
+ '''
+ subc_normalization = subparsers.add_parser("normalization", help = "Normalize sgRNA count matrix")
+ subc_normalization.add_argument("-i","--input",dest = "infile",type=str, required=True, help="input count file matrix")
+ subc_normalization.add_argument("-m","--method",dest="method", default="total", type=str,help ="design file", choices=['total','median','upperquantile'])
+ subc_normalization.add_argument("-o","--output",dest = "outfile",type=str,required=True, help="output")
+ subc_normalization.add_argument("--split-lib",dest = "splitlib",action='store_true', help="Lib A and B are sequenced separately")
+ return
+
+def add_stattest_parser(subparsers):
+  '''Add argument parser for statistical test
+  '''
+  subc_stattest = subparsers.add_parser("stattest", help="Identify significant genes from normalized count table")
+  subc_stattest.add_argument("-i","--input",dest = "infile",type=str,required=True, help = "sgRSEA input file, 4 columns")
+  subc_stattest.add_argument("-o","--output",dest = "outfile",type=str,required=True, help = "output file name")
+  subc_stattest.add_argument("-m","--multiplier",dest = "multiplier",type=int, default = 30,required=True, help = "Multiplier to generate background")
+  subc_stattest.add_argument("--bgtag",dest = "bgtag",type=str, default = "",help = "Sting to identify control sgRNAs")
+  subc_stattest.add_argument("--bg-row-start",dest = "bgrowstart",type=int,default = -1, help = "Row count of the start of control sgRNA block")
+  subc_stattest.add_argument("--bg-row-stop",dest = "bgrowstop",type=int, default=-1, help = "Row count of the stop of control sgRNA block")
+  return
+
+#DEP#def runCrispr(args,treatments,controls,tag="",tagStart=0,tagStop=0):
+#DEP#  try:
+#DEP#    infile = pd.read_table(args.infile,sep="\t")
+#DEP#  except:
+#DEP#    logging.error("Can not open input file, please check your file name. Exiting program.")
+#DEP#    sys.exit(1)
+#DEP#  if infile.shape[0]<=0:# No rows in input file
+#DEP#    logging.error("There is no data in the file. Exit.")
+#DEP#    sys.exit(0)
+#DEP#  #Normalization
+#DEP#  infile.fillna(0) #replace missing data with 0
+#DEP#  norm_flag = "single"
+#DEP#  if not (len(treatments)==1 and len(controls) ==1): # replicates exsit 
+#DEP#    norm_flag = "multiple"
+#DEP#  logging.debug(infile.columns.values) 
+#DEP#  normfile = Normalization.norm(infile,args.normalizeMethod,norm_flag)
+#DEP#  logging.debug("Normalization finished.")
+#DEP#  logging.debug(normfile.head(10))
+#DEP#  #Statistical test
+#DEP#  result = StatInfer.runTest(normfile,treatments,controls,tag,tagStart,tagStop, args.multiplier)
+#DEP#  #Output
+#DEP#  result.to_csv(args.outfile,sep="\t",header=True,index=False)
+
+
+
+def main():
+  logging.debug("main")
+  arg_parser = prepare_argparser()
+  args = arg_parser.parse_args()
+  subcommand  = args.subcommand_name
+  if subcommand == "count":
+    #import sgcount_fastq
+    sgrsea.sgcount.run(args)
+  elif subcommand == "normalization":
+    sgrsea.normalization.run(args)
+  elif subcommand == "stattest":
+    sgrsea.stattest.run(args)
+  elif subcommand == "run":
+    sgrsea.runsgrsea.run(args)
+  #Validating parameters
+#DEP#  nontag = ""
+#DEP#  start = 0
+#DEP#  stop = 0
+#DEP#  if args.nonT != None:
+#DEP#    nontag = args.nonT
+#DEP#  else:
+#DEP#    if args.nonTRow == None:
+#DEP#      logging.error("You must provide either -b or -r. Exiting program.")
+#DEP#      sys.exit(0)
+#DEP#    else:#nontargting row range provided
+#DEP#      rows = args.nonTRow.split(",")
+#DEP#      if len(rows)==2:
+#DEP#        start = int(rows[0])
+#DEP#        stop = int(rows[1])
+#DEP#      else:
+#DEP#        if start > stop:
+#DEP#          logging.error("NonTarget row start is bigger than stop, please check your parameters. Exiting. ")
+#DEP#          sys.exit(0)
+#DEP#        else:
+#DEP#          start = max(0,int(rows[0]))
+#DEP#          stop = 10**20 #set to a big number so the end of file will be used
+#DEP#  #Validating treatments and controls tags   
+#DEP#  treatments = args.treatcol.split(",")
+#DEP#  controls = args.ctrlcol.split(",")
+#DEP#  if len(treatments) ==0 or len(controls)==0:
+#DEP#    logging.error("Please provide treatments and controls column numbers. Exit.")
+#DEP#    sys.exit(1)
+#DEP#  #elif len(np.intersect1d(treatments,controls))>0:
+#DEP#  #  logging.error("Treatments and controls column numbers overlap. Please check your file. Exit.")
+#DEP#  #  sys.exit(1)
+#DEP#  #elif min(treatments) < 3 or min(controls) < 3:
+#DEP#  #  logging.error("Count data should start from the 3rd column. Columns received contain numbers smaller than 3. Please check your file. Exit.")
+#DEP#    sys.exit(1)
+#DEP#  
+#DEP#  logging.debug("Finish check nonT info")
+#DEP#  runCrispr(args,treatments,controls,nontag,start,stop)
+
+if __name__=="__main__":
+  main()

@@ -26,24 +26,6 @@ def percentile(n):
   percentile_.__name__ = 'percentile_%s' % n
   return percentile_
 
-def around_np(n):# decimal parameter, return integer
-  def around_(x):
-    return np.around(x,decimals=n)
-  around_.__name__= 'around_%s' % n
-  return around_
-
-def around(x):
-  '''Rounds 0.4 to 0 and 0.5 to 1. Only deals with positive numbers'''
-  try:
-    x = float(x)
-  except:
-    logging.error("There are values "+str(x)+" cannot be converted to float. Please make sure your count data start from the 3rd column of your data frame.")
-    sys.exit(1)
-  else:
-    if x - int(x) <= 0.4:
-      return int(x)
-    else:
-      return int(x)+1
 
 def norm(infile,method):
   info = infile.loc[:,['sgRNA','Gene']]

@@ -89,8 +89,8 @@ def zStat(sg_row,pNull):
 
 def maxMean(gene_zstat):
   scores = gene_zstat
-  sc_po = sum(scores[scores>=0])*1.0
-  sc_ne = sum(scores[scores<0])*1.0
+  sc_po = float(sum(scores[scores>=0]))
+  sc_ne = float(sum(scores[scores<0]))
   if abs(sc_po) >= abs(sc_ne):
     return sc_po/len(scores)
   else:

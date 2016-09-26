@@ -55,6 +55,9 @@ def normalization(infile, outfile, method, splitlib):
     norm_df = norm(pd.read_table(infile),method)
   norm_df.to_csv(outfile, sep="\t", index=False)
 
+def run(args):
+  normalization(args.infile, args.outfile, args.method, args.splitlib)
+
 def main():
   argparser = prepare_argparser()
   args = argparser.parse_args()

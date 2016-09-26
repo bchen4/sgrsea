@@ -47,11 +47,13 @@ def add_run_parser(subparsers):
   subc_run.add_argument("--trim3",dest="trim3",type=str,help = "The trimming pattern from 3'. This pattern and the following sequence will be removed")
   subc_run.add_argument("--normalize_method",dest="method", default="total", type=str,help ="design file", choices=['total','median','upperquantile'])
   subc_run.add_argument("--split-lib",dest = "splitlib",action='store_true', help="Lib A and B are sequenced separately")
+  subc_run.add_argument("-t","--treatment",dest="treat",type=str,required=True, help = "columns/name of treatment samples")
+  subc_run.add_argument("-c","--control",dest="ctrl",type=str,required=True, help="columns/name of control samples")
   subc_run.add_argument("--multiplier",dest = "multiplier",type=int, default = 30,required=True, help = "Multiplier to generate background")
   subc_run.add_argument("--bgtag",dest = "bgtag",type=str, default = "",help = "Sting to identify control sgRNAs")
   subc_run.add_argument("--bg-row-start",dest = "bgrowstart",type=int,default = -1, help = "Row count of the start of control sgRNA block")
   subc_run.add_argument("--bg-row-stop",dest = "bgrowstop",type=int, default=-1, help = "Row count of the stop of control sgRNA block")
-
+  return
 
 def add_count_parser(subparsers):
   '''Add argument parsers for sgcount

@@ -20,12 +20,12 @@ def prepare_argparser():
   argparser.add_argument("-d","--design",dest = "designfile",type=str, help="output")
   argparser.add_argument("-t","--treatment",dest="treat",type=str,required=True, help = "columns/name of treatment samples")
   argparser.add_argument("-c","--control",dest="ctrl",type=str,required=True, help="columns/name of control samples")
-  argparser.add_argument("--t-lable",dest="treatlabel",type=str, help = "label of treatment samples")
-  argparser.add_argument("--c-label",dest="ctrllabel",type=str, help="label of control samples")
+  #argparser.add_argument("--t-lable",dest="treatlabel",type=str, help = "label of treatment samples")
+  #argparser.add_argument("--c-label",dest="ctrllabel",type=str, help="label of control samples")
   return(argparser)
 
 
-def runReformat(infile, designfile, ofile, t, c):
+def runRformat(infile, designfile, ofile, t, c):
   '''
   If treatment and control are numeric, there is no need of design file.
   '''
@@ -82,6 +82,8 @@ def reformat(cfile, treatcols, ctrlcols):
       df = df.append(newdf)
   return df
 
+def run():
+  runReformat(args.infile, args.designfile, args.outfile, args.treat, args.ctrl)
 
 def main():
   argparser = prepare_argparser()

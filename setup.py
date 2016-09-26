@@ -59,8 +59,7 @@ def main():
       license='BSD',
       package_dir={'sgrsea':'sgrsea'},#,'bin':'bin','test':'test'},
       packages=['sgrsea'],
-      scripts=['bin/sgrsea.py',
-        ],
+      scripts=['bin/sgrsea'],
       classifiers=[
         'Development Status :: 1 - Dev',
         'Environment :: Console',

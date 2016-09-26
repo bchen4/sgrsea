@@ -183,10 +183,13 @@ def sgcount(fqfile,sgstart, sgstop, trim3, label="count",sublib="sublib"):
   seq_count.to_csv(fqfile+".tmpcount",sep="\t",index=False)
   return (fqfile,total_count,sublib)
 
-def run():
+def run(args):
+  runsgcount(args)
+
+def main():
   argparser = prepare_argparser()
   args = argparser.parse_args()
   runsgcount(args)
 
 if __name__=="__main__":
-  run()
+  main()

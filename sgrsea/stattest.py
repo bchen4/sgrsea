@@ -21,34 +21,34 @@ def prepare_argparser():
   argparser.add_argument("-i","--input",dest = "infile",type=str,required=True, help = "sgRSEA input file, 4 columns")
   argparser.add_argument("-o","--output",dest = "outfile",type=str,required=True, help = "output file name")
   argparser.add_argument("--multiplier",dest = "multiplier",type=int, default = 30,required=True, help = "Multiplier to generate background")
-  argparser.add_argument("--bgtag",dest = "bgtag",type=str, default = "",help = "Sting to identify control sgRNAs")
-  argparser.add_argument("--bg-row-start",dest = "bgrowstart",type=int,default = -1, help = "Row count of the start of control sgRNA block")
-  argparser.add_argument("--bg-row-stop",dest = "bgrowstop",type=int, default=-1, help = "Row count of the stop of control sgRNA block")
+  #argparser.add_argument("--bgtag",dest = "bgtag",type=str, default = "",help = "Sting to identify control sgRNAs")
+  #argparser.add_argument("--bg-row-start",dest = "bgrowstart",type=int,default = -1, help = "Row count of the start of control sgRNA block")
+  #argparser.add_argument("--bg-row-stop",dest = "bgrowstop",type=int, default=-1, help = "Row count of the stop of control sgRNA block")
   return(argparser)
 
-def getBackground(infile,nontag="",tagStart=0,tagStop=0):
-  '''Get background data frame from either string tag or row range.
-  '''
-  if len(nontag)>0:
-    bgFile = infile[infile.iloc[:,0].str.contains(nontag)]
-    dataFile = infile[infile.iloc[:,0].str.contains(nontag)==False]
-  elif tagStart<tagStop and tagStart<infile.shape[0]: #use the row range to get file
-    tagStart -= 1
-    tagStop = min(infile.shape[0],tagStop)
-    bgFile = infile.iloc[tagStart:tagStop,:]
-    dataFile = infile.iloc[0:tagStart-1,:].append(infile.iloc[tagStop:,:])
-  else:#Non background
-    logging.info("No designed NonTargeting sgRNAs, use input data as backgound.")
-    bgFile = copy.copy(infile)
-    dataFile = infile
-
-  logging.debug("bgFile: "+str(bgFile.shape[0]))
-  logging.debug("dataFile: "+str(dataFile.shape[0]))
-  if bgFile.shape[0]==0: #backgound file is empty
-    logging.info("There is no NonTargeting sgRNA found. Use input data as background.")
-    bgFile = copy.copy(infile)
-    dataFile = infile
-  return (dataFile,bgFile)
+#DEP#def getBackground(infile,nontag="",tagStart=0,tagStop=0):
+#DEP#  '''Get background data frame from either string tag or row range.
+#DEP#  '''
+#DEP#  if len(nontag)>0:
+#DEP#    bgFile = infile[infile.iloc[:,0].str.contains(nontag)]
+#DEP#    dataFile = infile[infile.iloc[:,0].str.contains(nontag)==False]
+#DEP#  elif tagStart<tagStop and tagStart<infile.shape[0]: #use the row range to get file
+#DEP#    tagStart -= 1
+#DEP#    tagStop = min(infile.shape[0],tagStop)
+#DEP#    bgFile = infile.iloc[tagStart:tagStop,:]
+#DEP#    dataFile = infile.iloc[0:tagStart-1,:].append(infile.iloc[tagStop:,:])
+#DEP#  else:#Non background
+#DEP#    logging.info("No designed NonTargeting sgRNAs, use input data as backgound.")
+#DEP#    bgFile = copy.copy(infile)
+#DEP#    dataFile = infile
+#DEP#
+#DEP#  logging.debug("bgFile: "+str(bgFile.shape[0]))
+#DEP#  logging.debug("dataFile: "+str(dataFile.shape[0]))
+#DEP#  if bgFile.shape[0]==0: #backgound file is empty
+#DEP#    logging.info("There is no NonTargeting sgRNA found. Use input data as background.")
+#DEP#    bgFile = copy.copy(infile)
+#DEP#    dataFile = infile
+#DEP#  return (dataFile,bgFile)
 
 def addZstat(data_df, pNull):
   data_df['pmme'] = data_df['treat']/(data_df['treat']+data_df['ctrl'])
@@ -164,13 +164,13 @@ def getPQ(data_maxmean_std,null_maxmean_std):
   data_maxmean_std['neg_rank'] = data_maxmean_std['neg_p'].rank()
   return data_maxmean_std
 
-def runStatinfer(infile,outfile,nontag,tagStart,tagStop,multiplier):
-  if (len(nontag)!=0) or (tagStart>0 and tagStop>0):
-    (dataFile,bgFile) = getBackground(infile,nontag,tagStart,tagStop)
-    p0 = pMME(bgFile)
-  else:#Use dataset as background
-    dataFile = pd.read_table(infile)
-    p0 = pMME(dataFile.iloc[:,2],dataFile.iloc[:,3])
+def runStatinfer(infile,outfile,multiplier):
+  #if (len(nontag)!=0) or (tagStart>0 and tagStop>0):
+  #  (dataFile,bgFile) = getBackground(infile,nontag,tagStart,tagStop)
+  #  p0 = pMME(bgFile)
+  #else:#Use dataset as background
+  dataFile = pd.read_table(infile)
+  p0 = pMME(dataFile.iloc[:,2],dataFile.iloc[:,3])
   if p0 ==0 or p0 ==1:
     logging.error("pMME for background equals to 0/1, indicating no counts for treatment or control. Please check your data. Exit.")
     sys.exit(1)
@@ -207,7 +207,8 @@ def main():
   #print pMME(infile)
   #df = getMatrixMaxmean(infile)
   #df.to_csv(args.outfile,sep="\t",index=False)
-  runStatinfer(args.infile,args.outfile,args.bgtag, args.bgrowstart, args.bgrowstop, args.multiplier)
+  #runStatinfer(args.infile,args.outfile,args.bgtag, args.bgrowstart, args.bgrowstop, args.multiplier)
+  runStatinfer(args.infile,args.outfile,args.multiplier)
   
 if __name__ == '__main__':
 	main()

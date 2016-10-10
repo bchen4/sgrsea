@@ -156,16 +156,16 @@ Library file should have no header, with 3 columns in the following order:
 
 Example:
 ```
-Gene  sgRNA Sequence
+Gene  sgRNA             Sequence
 A1BG  HGLibA_00001  GTCGCTGAGCTCCGATTCGA
 A1BG  HGLibA_00002  ACCTGTAGTTGCCGGCGTGC
 A1BG  HGLibA_00003  CGTCAGCGTCACATTGGCCA
 A1CF  HGLibA_00004  CGCGCACTGGTCCAGCGCAC
 A1CF  HGLibA_00005  CCAAGCTATATCCTGTGCGC
 A1CF  HGLibA_00006  AAGTTGCTTGATTGCATTCT
-A2M HGLibA_00007  CGCTTCTTAAATTCTTGGGT
-A2M HGLibA_00008  TCACAGCGAAGGCGACACAG
-A2M HGLibA_00009  CAAACTCCTTCATCCAAGTC
+A2M   HGLibA_00007  CGCTTCTTAAATTCTTGGGT
+A2M   HGLibA_00008  TCACAGCGAAGGCGACACAG
+A2M   HGLibA_00009  CAAACTCCTTCATCCAAGTC
 A2ML1 HGLibA_00010  AAATTTCCCCTCCGTTCAGA
 ```
 
@@ -181,7 +181,14 @@ Design file has to include all the essential columns (Please use exactly the sam
 * **sgstop**: The last nucleotide of sgRNA. 1-index
 * **trim3**: Sequence pattern of the 3' adaptor. Usually 5~7nt. If provided, the program will look for perfect match of this pattern in fastq sequence. The last match and all nucleotides after that will be trimmed. If you don't need this, put "NA" in the design file
 
-
+Example
+```
+filepath                label lib                                 sublib  group     sgstart  sgstop  trim3
+KO_SS_UA1_R1_001.fastq  SS_U1 Human_GeCKOv2_Library_A_3.uniq.txt  LibA    CONTROL   34       53      False
+KO_SS_UB1_R1_001.fastq  SS_U1 Human_GeCKOv2_Library_B_1.uniq.txt  LibB    CONTROL   36       55      False
+KO_SS_HA1_R1_001.fastq  SS_H1 Human_GeCKOv2_Library_A_3.uniq.txt  LibA    TREATMENT 42       61      False
+KO_SS_HB1_R1_001.fastq  SS_H1 Human_GeCKOv2_Library_B_1.uniq.txt  LibB    TREATMENT 35       54      False
+```
  
 
 

@@ -33,8 +33,10 @@ def prepare_argparser():
   argparser.add_argument("--t-lable",dest="treatlabel",type=str, help = "label of treatment samples")
   argparser.add_argument("--c-label",dest="ctrllabel",type=str, help="label of control samples")
   argparser.add_argument("--multiplier",dest = "multiplier",type=int, default = 30,required=True, help = "Multiplier to generate background")
+  argparser.add_argument("--collapse-replicates",dest="collapsemethod",type=str, help = "Way to collapse replicates", default="auto", choices=['auto','stack','mean'])
+
   #argparser.add_argument("--bgtag",dest = "bgtag",type=str, default = "",help = "Sting to identify control sgRNAs")
-  3argparser.add_argument("--bg-row-start",dest = "bgrowstart",type=int,default = -1, help = "Row count of the start of control sgRNA block")
+  #argparser.add_argument("--bg-row-start",dest = "bgrowstart",type=int,default = -1, help = "Row count of the start of control sgRNA block")
   #argparser.add_argument("--bg-row-stop",dest = "bgrowstop",type=int, default=-1, help = "Row count of the stop of control sgRNA block")
   return argparser
 
@@ -45,7 +47,7 @@ def run(args):
   if os.path.exists(args.outfile+".count.txt"):#count matrix file exsists
     normalization.normalization(args.outfile+".count.txt",args.outfile+".norm.txt",args.method, args.splitlib)
   if os.path.exists(args.outfile+".norm.txt"):
-    files = reformatCountTable.runReformat(args.outfile+".norm.txt",args.designfile, args.outfile,args.treat, args.ctrl)
+    files = reformatCountTable.runReformat(args.outfile+".norm.txt",args.designfile, args.outfile,args.treat, args.ctrl, args.collapsemethod)
   for fn in files:
     logging.info("Running test on "+fn)
     stattest.runStatinfer(fn,fn+".sgRSEA.xls",args.multiplier)

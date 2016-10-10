@@ -29,6 +29,8 @@ def prepare_argparser():
   add_count_parser(subparsers)
   #command for normalization
   add_normalization_parser(subparsers)
+  #command for reformat
+  add_reformat_parser(subparsers)
   #command for stattest
   add_stattest_parser(subparsers)
   return(argparser)
@@ -50,6 +52,8 @@ def add_run_parser(subparsers):
   subc_run.add_argument("-t","--treatment",dest="treat",type=str,required=True, help = "columns/name of treatment samples")
   subc_run.add_argument("-c","--control",dest="ctrl",type=str,required=True, help="columns/name of control samples")
   subc_run.add_argument("--multiplier",dest = "multiplier",type=int, default = 30,required=True, help = "Multiplier to generate background")
+  subc_run.add_argument("--collapse-replicates",dest="collapsemethod",type=str, help = "Way to collapse replicates", default="auto", choices=['auto','stack','mean'])
+
   #subc_run.add_argument("--bgtag",dest = "bgtag",type=str, default = "",help = "Sting to identify control sgRNAs")
   #subc_run.add_argument("--bg-row-start",dest = "bgrowstart",type=int,default = -1, help = "Row count of the start of control sgRNA block")
   #subc_run.add_argument("--bg-row-stop",dest = "bgrowstop",type=int, default=-1, help = "Row count of the stop of control sgRNA block")
@@ -78,6 +82,18 @@ def add_normalization_parser(subparsers):
  subc_normalization.add_argument("-o","--output",dest = "outfile",type=str,required=True, help="output")
  subc_normalization.add_argument("--split-lib",dest = "splitlib",action='store_true', help="Lib A and B are sequenced separately")
  return
+
+def add_reformat_parser(subparsers):
+  '''Add argument parser for reformatting count table
+  '''
+  subc_reformat = subparsers.add_parser("reformat", help="Reformat count table for sgRSEA stat test")
+  subc_reformat.add_argument("-i","--input",dest = "infile",type=str,required=True, help="input BAM file")
+  subc_reformat.add_argument("-o","--output",dest = "outfile",type=str,required= True, help="output")
+  subc_reformat.add_argument("-d","--design",dest = "designfile",type=str, help= "output")
+  subc_reformat.add_argument("-t","--treatment",dest="treat",type=str,required=True, help = "columns/name of treatment samples")
+  subc_reformat.add_argument("-c","--control",dest="ctrl",type=str,required=True , help="columns/name of control samples")
+  subc_reformat.add_argument("--collapse-replicates",dest="collapsemethod",type= str, help = "Way to collapse replicates", default="auto", choices=['auto','stack','mean'])
+
 
 def add_stattest_parser(subparsers):
   '''Add argument parser for statistical test
@@ -126,6 +142,8 @@ def main():
     sgrsea.sgcount.run(args)
   elif subcommand == "normalization":
     sgrsea.normalization.run(args)
+  elif subcommand == "reformat":
+    sgrsea.reformatCountTable.run(args)
   elif subcommand == "stattest":
     sgrsea.stattest.run(args)
   elif subcommand == "run":

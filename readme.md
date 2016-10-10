@@ -183,16 +183,27 @@ Design file has to include all the essential columns (Please use exactly the sam
 
 Example
 ```
-filepath                label lib                                 sublib  group     sgstart  sgstop  trim3
-KO_SS_UA1_R1_001.fastq  SS_U1 Human_GeCKOv2_Library_A_3.uniq.txt  LibA    CONTROL   34       53      False
-KO_SS_UB1_R1_001.fastq  SS_U1 Human_GeCKOv2_Library_B_1.uniq.txt  LibB    CONTROL   36       55      False
-KO_SS_HA1_R1_001.fastq  SS_H1 Human_GeCKOv2_Library_A_3.uniq.txt  LibA    TREATMENT 42       61      False
-KO_SS_HB1_R1_001.fastq  SS_H1 Human_GeCKOv2_Library_B_1.uniq.txt  LibB    TREATMENT 35       54      False
+filepath          label lib                                 sublib  group     sgstart  sgstop  trim3
+UA1_R1_001.fastq  SS_U1 Human_GeCKOv2_Library_A_3.uniq.txt  LibA    CONTROL   34       53      False
+UB1_R1_001.fastq  SS_U1 Human_GeCKOv2_Library_B_1.uniq.txt  LibB    CONTROL   36       55      False
+HA1_R1_001.fastq  SS_H1 Human_GeCKOv2_Library_A_3.uniq.txt  LibA    TREATMENT 42       61      False
+HB1_R1_001.fastq  SS_H1 Human_GeCKOv2_Library_B_1.uniq.txt  LibB    TREATMENT 35       54      False
 ```
- 
+
+In the above example, there are 1 treatment and 1 control. Library A and B are sequenced separately. For each sample, sgRNA positions are different. There is not 3 prime adaptor sequence provides so *trim3* columns are filled with "False".
 
 
+##Output
 
+###Count matrix (w/wo normalization)
+
+###sgRSEA formatted matrix
+
+###sgRSEA stattest output file 
+
+
+##License
+See the LICENSE file for license rights and limitations (MIT).
 
 
 

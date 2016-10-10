@@ -144,7 +144,31 @@ optional arguments:
 
 
 
-##File formats
+##Input
+
+###[Fastq file](https://en.wikipedia.org/wiki/FASTQ_format)
+
+###Library file
+Library file should have no header, with 3 columns in the following order: 
+* gene name 
+* sgRNA id
+* sgRNA sequence
+
+Example:
+```
+Gene  sgRNA Sequence
+A1BG  HGLibA_00001  GTCGCTGAGCTCCGATTCGA
+A1BG  HGLibA_00002  ACCTGTAGTTGCCGGCGTGC
+A1BG  HGLibA_00003  CGTCAGCGTCACATTGGCCA
+A1CF  HGLibA_00004  CGCGCACTGGTCCAGCGCAC
+A1CF  HGLibA_00005  CCAAGCTATATCCTGTGCGC
+A1CF  HGLibA_00006  AAGTTGCTTGATTGCATTCT
+A2M HGLibA_00007  CGCTTCTTAAATTCTTGGGT
+A2M HGLibA_00008  TCACAGCGAAGGCGACACAG
+A2M HGLibA_00009  CAAACTCCTTCATCCAAGTC
+A2ML1 HGLibA_00010  AAATTTCCCCTCCGTTCAGA
+```
+
 ###Design file
 When you are using the suite for your experiment, you need to prepare a design file.(For individual functionalities, you may not have to.)
 Design file has to include all the essential columns (Please use exactly the same column names, order does not matter):

@@ -189,16 +189,16 @@ def runStatinfer(infile,outfile,multiplier):
 #BC#    bgFile = addZstat(bgFile, p0)
 #BC#  else:
 #BC#    bgFile = filtered_data
-#BC#  null_maxmean_df = maxmeanSampleNull(genelist,bgFile,multiplier)
-#BC#  #logging.debug("Get standardize factors")
-#BC#  factor_df = standardizeFactor(null_maxmean_df)
+  null_maxmean_df = maxmeanSampleNull(genelist,bgFile,multiplier)
+  #logging.debug("Get standardize factors")
+  factor_df = standardizeFactor(null_maxmean_df)
 #BC#  logging.debug(factor_df)
 #BC#  #logging.info("Standardization...")
-#BC#  data_sdf = standardizeDF(data_maxmean_df,factor_df)
-#BC#  null_sdf = standardizedDF(null_maxmean_df,factor_df)
-#BC#  #sDf.to_csv("test_real_standardize.txt",sep="\t",header=True,index=False)
-#BC#  fdf = getPQ(data_sdf,null_sdf)
-#BC#  fdf.to_csv(outfile,sep="\t",index=False)
+  data_sdf = standardizeDF(data_maxmean_df,factor_df)
+  null_sdf = standardizeDF(null_maxmean_df,factor_df)
+  sDf.to_csv("test_real_standardize.txt",sep="\t",header=True,index=False)
+  fdf = getPQ(data_sdf,null_sdf)
+  fdf.to_csv(outfile,sep="\t",index=False)
 
 def main():
   argparser = prepare_argparser()

@@ -62,6 +62,8 @@ For command line options of each command, type sgrsea COMMAND -h
 ```
 
 ###Get count matrix from fastq files
+**sgRSEA count** can be used on single fastq file and multiple fastq files. When using multiple fastq files, a [design file](http://) containing design information should be provided.
+
 ```bash
 usage: sgrsea count [-h] [-i INFILE | -d DESIGNFILE] -o OUTFILE [-l LIBFILE]
                     [--sgstart SGSTART] [--sgstop SGSTOP] [--trim3 TRIM3]
@@ -82,6 +84,63 @@ optional arguments:
                         following sequence will be removed
 ```
 
+###Normalize sgRNA count matrix
+
+```bash
+usage: sgrsea normalization [-h] -i INFILE
+                            [--normalize-method {total,median,upperquantile}]
+                            -o OUTFILE [--split-lib]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -i INFILE, --input INFILE
+                        input count file matrix
+  --normalize-method {total,median,upperquantile}
+                        design file
+  -o OUTFILE, --output OUTFILE
+                        output
+  --split-lib           Lib A and B are sequenced separately
+```
+
+###Convert data matrix to sgRSEA input
+
+sgRSEA takes a data matrix with 4 columns: sgRNA, Gene, treatment, control.
+**sgreas reformat** to collapse replicates and make multiple input files for *stattest* if there are more than 1 comparison needed to be done accroding to the design file.
+
+```bash
+usage: sgrsea reformat [-h] -i INFILE -o OUTFILE [-d DESIGNFILE] -t TREAT -c
+                       CTRL [--collapse-replicates {auto,stack,mean}]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -i INFILE, --input INFILE
+                        input BAM file
+  -o OUTFILE, --output OUTFILE
+                        output
+  -d DESIGNFILE, --design DESIGNFILE
+                        output
+  -t TREAT, --treatment TREAT
+                        columns/name of treatment samples
+  -c CTRL, --control CTRL
+                        columns/name of control samples
+  --collapse-replicates {auto,stack,mean}
+                        Way to collapse replicates
+```
+
+###Find significant genes for each comparison
+
+```bash
+usage: sgrsea stattest [-h] -i INFILE -o OUTFILE --multiplier MULTIPLIER
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -i INFILE, --input INFILE
+                        sgRSEA input file, 4 columns
+  -o OUTFILE, --output OUTFILE
+                        output file name
+  --multiplier MULTIPLIER
+                        Multiplier to generate background
+```
 
 
 

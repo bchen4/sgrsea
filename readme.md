@@ -36,13 +36,51 @@ pip install -r requirements.txt
 ```
 
 3 Install sgRSEA
-'''python
+```python
 python setup.py install
 ```
 
 ##Usage
 
+sgRSEA can be run on specific steps as well as fastq-to-result using a single command.
 
+```
+sgRSEA: identify significant genes in CRISPR-Cas9 experiment
+
+positional arguments:
+  {count,reformat,run,stattest,normalization}
+    run                 Run the whole program from fastq to result
+    count               Get sgRNA count matrix
+    normalization       Normalize sgRNA count matrix
+    reformat            Reformat count table for sgRSEA stat test
+    stattest            Identify significant genes from normalized count table
+
+optional arguments:
+  -h, --help            show this help message and exit
+
+For command line options of each command, type sgrsea COMMAND -h
+```
+
+###Get count matrix from fastq files
+```bash
+usage: sgrsea count [-h] [-i INFILE | -d DESIGNFILE] -o OUTFILE [-l LIBFILE]
+                    [--sgstart SGSTART] [--sgstop SGSTOP] [--trim3 TRIM3]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -i INFILE, --input INFILE
+                        input fastq
+  -d DESIGNFILE, --design DESIGNFILE
+                        design file
+  -o OUTFILE, --output OUTFILE
+                        output
+  -l LIBFILE, --library LIBFILE
+                        Gene locus in bed format
+  --sgstart SGSTART     The first nucleotide sgRNA starts. 1-index
+  --sgstop SGSTOP       The last nucleotide sgRNA starts. 1-index
+  --trim3 TRIM3         The trimming pattern from 3'. This pattern and the
+                        following sequence will be removed
+```
 
 
 

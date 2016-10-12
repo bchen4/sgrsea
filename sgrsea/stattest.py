@@ -149,8 +149,11 @@ def standardize(datarow,factors):
   return smm
 
 def standardizeDF(maxmean_df,sFactors):
-  maxmean_df['sMaxmean'] = maxmean_df.apply(lambda x: standardize(x,sFactors),axis=1)
-  return maxmean_df
+  #BC#maxmean_df['sMaxmean'] = maxmean_df.apply(lambda x: standardize(x,sFactors),axis=1)
+  df = maxmean_df.merge(sFactors,on="sgcount",how="left")
+  df['sMaxmean'] = (df['maxmean']-df['mean']/df['std'])
+  return df
+ #BC# return maxmean_df
   
 def pvalue(tn,smm_null):
   '''smm_null is a dataframe'''

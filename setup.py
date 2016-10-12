@@ -1,6 +1,6 @@
 """Description
 
-Setup script for crispr
+Setup script for sgRSEA
 
 Copyrigh (c) Beibei Chen <beibei.chen@utsouthwestern.edu>
 
@@ -77,7 +77,6 @@ def main():
         'statsmodels',
         ],
       cmdclass = command_classes,
-      #ext_modules = ext_modules
       )
 
 if __name__ == '__main__':

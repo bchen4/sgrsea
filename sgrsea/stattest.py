@@ -101,18 +101,18 @@ def getMatrixMaxmean(filtered_zdf):
      This function returns a dataframe with 'Gene', 'maxmean', 'sgCount'    
   '''
   maxmean_df = filtered_zdf.groupby("Gene").agg({'zstat':maxMean,'sgRNA':'count'}).reset_index()
-  maxmean_df.columns = ["Gene","maxmean","sgCount"]
+  maxmean_df.columns = ["Gene","maxmean","sgcount"]
   logging.debug(maxmean_df.head(10))
   return maxmean_df
 
-def sampleNull(genelist,bgFile):
-  sample_size = len(genelist)
-  samples = bgFile.iloc[np.random.randint(0,len(bgFile),size=sample_size)]
-  #make samples into gene_matrix structure list
-  samples['gene'] = genelist.values
-  logging.debug(samples.head(10))
-  group_sample = samples.groupby('gene')
-  return group_sample
+#DEP#def sampleNull(genelist,bgFile):
+#DEP#  sample_size = len(genelist)
+#DEP#  samples = bgFile.iloc[np.random.randint(0,len(bgFile),size=sample_size)]
+#DEP#  #make samples into gene_matrix structure list
+#DEP#  samples['gene'] = genelist.values
+#DEP#  logging.debug(samples.head(10))
+#DEP#  #group_sample = samples.groupby('gene')
+#DEP#  return samples
 
 
 def maxmeanSampleNull(genelist,bgFile,multiplier=10):
@@ -120,11 +120,13 @@ def maxmeanSampleNull(genelist,bgFile,multiplier=10):
   null_maxmean = pd.DataFrame()
   np.random.seed(8512)
   for i in range(multiplier):
-    null_group = sampleNull(genelist,bgFile)
-    newdf = getMatrixMaxmean(null_group,pNull)
+    null_df = copy.copy(bgFile)
+    newgene = np.random.permutation(null_df['Gene'])
+    null_df['Gene'] = newgene
+    newdf = getMatrixMaxmean(null_df)
     null_maxmean = null_maxmean.append(newdf)
-  logging.debug("Null_maxmean_df")
-  logging.debug(null_maxmean[null_maxmean['sgcount'].isin([8,9])])
+  #logging.debug("Null_maxmean_df")
+  #logging.debug(null_maxmean[null_maxmean['sgcount'].isin([8,9])])
   return null_maxmean
 
 def standardizeFactor(null_maxmean):
@@ -140,7 +142,7 @@ def standardize(datarow,factors):
     f_mean = factor.iloc[0]['mean']
     f_std = factor.iloc[0]['std']
   elif factor.shape[0]==0:
-    logging.warning("There is no record for genes with "+str(datarow.sgcount+" sgRNAs. "))
+    logging.warning("There is no record for genes with "+str(datarow.sgcount)+" sgRNAs. ")
   else:#more than 1 record
     logging.warning("There are more than 1 record for sgRNA count "+str(datarow.sgcount+" group. Check data."))
   smm = (datarow.maxmean-f_mean)*1.0/f_std
@@ -181,22 +183,23 @@ def runStatinfer(infile,outfile,multiplier):
   dataFile.to_csv("test_real_zscore.txt",sep="\t",header=True,index=False)
   (filtered_data,genelist) = dataFilter(dataFile,1)
   #dataStat = treat_group.size()
-  #logging.info("Calculating treatment maxmean...")
+  logging.info("Calculating treatment maxmean...")
   data_maxmean_df = getMatrixMaxmean(filtered_data)
   data_maxmean_df.to_csv("test_real_maxmean.txt",sep="\t",header=True,index=False)
-  #logging.info("Sampling null distribution...")
+  logging.info("Sampling null distribution...")
 #BC#  if isinstance(bgFile, pd.DataFrame): 
 #BC#    bgFile = addZstat(bgFile, p0)
 #BC#  else:
 #BC#    bgFile = filtered_data
-  null_maxmean_df = maxmeanSampleNull(genelist,bgFile,multiplier)
-  #logging.debug("Get standardize factors")
+  null_maxmean_df = maxmeanSampleNull(genelist,filtered_data,multiplier)
+  null_maxmean_df.to_csv("null_maxmean_df.xls",sep="\t",index=False)
+  logging.debug("Get standardize factors")
   factor_df = standardizeFactor(null_maxmean_df)
-#BC#  logging.debug(factor_df)
-#BC#  #logging.info("Standardization...")
+  logging.debug(factor_df)
+  logging.info("Standardization...")
   data_sdf = standardizeDF(data_maxmean_df,factor_df)
   null_sdf = standardizeDF(null_maxmean_df,factor_df)
-  sDf.to_csv("test_real_standardize.txt",sep="\t",header=True,index=False)
+  data_sdf.to_csv("test_real_standardize.txt",sep="\t",header=True,index=False)
   fdf = getPQ(data_sdf,null_sdf)
   fdf.to_csv(outfile,sep="\t",index=False)
 

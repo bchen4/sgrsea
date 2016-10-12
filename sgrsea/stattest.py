@@ -165,9 +165,11 @@ def getPQ(data_maxmean_std,null_maxmean_std):
   data_maxmean_std['neg_p'] = 1.0 -data_maxmean_std['pos_p'] 
   data_maxmean_std['pos_q'] = multipletests(data_maxmean_std.loc[:,'pos_p'],method='fdr_bh')[1]
   data_maxmean_std['neg_q'] = multipletests(data_maxmean_std.loc[:,'neg_p'],method='fdr_bh')[1]
-  data_maxmean_std['pos_rank'] = data_maxmean_std['pos_p'].rank().astype(int)
-  data_maxmean_std['neg_rank'] = data_maxmean_std['neg_p'].rank().astype(int)
+  #data_maxmean_std['pos_rank'] = data_maxmean_std['pos_p'].rank().astype(int)
+  #data_maxmean_std['neg_rank'] = data_maxmean_std['neg_p'].rank().astype(int)
   data_maxmean_std = data_maxmean_std.sort_values(by=['pos_rank','sMaxmean'],ascending=[True,False])
+  data_maxmean_std['pos_rank'] = data_maxmean_std.index + 1
+  data_maxmean_std['neg_rank'] = data_maxmean_std.shape[0] - data_maxmean_std['pos_rank']
   return data_maxmean_std
 
 def runStatinfer(infile,outfile,multiplier):

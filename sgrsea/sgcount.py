@@ -74,7 +74,11 @@ def generatefinaltable(resultdic, totaldic, lib, dfile):
   mapped_total = count_df.iloc[:,3:].groupby("sublib").sum().reset_index()
   mapped_total_df = pd.melt(mapped_total, id_vars=['sublib'],var_name=['label'],value_name='mapped_reads')
   totalread_df = pd.DataFrame(totaldic.items(),columns=["filepath","total_reads"])
+<<<<<<< HEAD:sgrsea/sgcount.py
   if dfile!=None:
+=======
+  if isinstance(dfile,pd.DataFrame):
+>>>>>>> master:sgrsea/sgcount_fastq.py
     summary_df = dfile.merge(totalread_df,on="filepath")
     summary_df = summary_df.merge(mapped_total_df,on=['sublib','label'])
   else:#single file
@@ -152,8 +156,12 @@ def makelib(libs, sublib):
 def trimseq(seq,start,stop,trim3=None):
   if len(seq)> start > 0:
     new_start = start - 1
+  else:
+    new_start = 0
   if 0 < stop <= len(seq):
     new_stop  = stop
+  else:
+    new_stop = len(seq)
   if trim3:#find the pattern from tail and trim off the rest of seq
     trim_index = seq.rfind(trim3)
     if trim_index >0:
@@ -167,6 +175,7 @@ def sgcount(fqfile,sgstart, sgstop, trim3, label="count",sublib="sublib"):
   Count sequence frequency in a fastq file.
   Write result in a temp file due to Python multiprocessing hang with huge result. (It can only handle int and string, not a instance of a class)
   '''
+  trim_out = open(fqfile+".trim","w")
   total_count = 0
   seqdic = {}
   for record in SeqIO.parse(fqfile,"fastq"):
@@ -175,12 +184,14 @@ def sgcount(fqfile,sgstart, sgstop, trim3, label="count",sublib="sublib"):
       logging.info("Processed "+fqfile+" "+str(total_count)+" reads...")
       #break
     sequence =  trimseq(str(record.seq),sgstart, sgstop, trim3)
+    print >> trim_out, ">"+record.id+"\n"+sequence
     if not seqdic.has_key(sequence):
       seqdic[sequence] = 0
     seqdic[sequence]+=1
   seq_count = pd.DataFrame(seqdic.items(),columns=['Sequence',label])
   logging.info(seq_count.shape)
   seq_count.to_csv(fqfile+".tmpcount",sep="\t",index=False)
+  trim_out.close()
   return (fqfile,total_count,sublib)
 
 def run(args):

@@ -1,4 +1,4 @@
-#sgRSEA: identify significant genes in GeCKO
+#sgRSEA: Enrichment Analysis of CRISPR/Cas9 Knockout Screen Data
 
 sgRSEA is a tool to identify significant genes in GeCKO experiments.
 

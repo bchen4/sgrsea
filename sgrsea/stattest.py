@@ -149,25 +149,25 @@ def standardizeFactor(null_maxmean):
 #DEP#  return smm
 
 def standardizeDF(maxmean_df,sFactors):
-  #BC#maxmean_df['sMaxmean'] = maxmean_df.apply(lambda x: standardize(x,sFactors),axis=1)
+  #BC#maxmean_df['NScore'] = maxmean_df.apply(lambda x: standardize(x,sFactors),axis=1)
   df = maxmean_df.merge(sFactors,on="sgcount",how="left")
-  df['sMaxmean'] = (df['maxmean']-df['mean'])/df['std']
+  df['NScore'] = (df['maxmean']-df['mean'])/df['std']
   return df
  #BC# return maxmean_df
   
 def pvalue(tn,smm_null):
   '''smm_null is a dataframe'''
-  pos_p = (smm_null[smm_null['sMaxmean']>tn].shape[0]+1.0)/(1.0+smm_null.shape[0])
+  pos_p = (smm_null[smm_null['NScore']>tn].shape[0]+1.0)/(1.0+smm_null.shape[0])
   return pos_p
 
 def getPQ(data_maxmean_std,null_maxmean_std):
-  data_maxmean_std['pos_p'] = data_maxmean_std.apply(lambda x: pvalue(x['sMaxmean'],null_maxmean_std),axis=1)
+  data_maxmean_std['pos_p'] = data_maxmean_std.apply(lambda x: pvalue(x['NScore'],null_maxmean_std),axis=1)
   data_maxmean_std['neg_p'] = 1.0 -data_maxmean_std['pos_p'] 
-  data_maxmean_std['pos_q'] = multipletests(data_maxmean_std.loc[:,'pos_p'],method='fdr_bh')[1]
-  data_maxmean_std['neg_q'] = multipletests(data_maxmean_std.loc[:,'neg_p'],method='fdr_bh')[1]
+  data_maxmean_std['pos_fdr'] = multipletests(data_maxmean_std.loc[:,'pos_p'],method='fdr_bh')[1]
+  data_maxmean_std['neg_fdr'] = multipletests(data_maxmean_std.loc[:,'neg_p'],method='fdr_bh')[1]
   #data_maxmean_std['pos_rank'] = data_maxmean_std['pos_p'].rank().astype(int)
   #data_maxmean_std['neg_rank'] = data_maxmean_std['neg_p'].rank().astype(int)
-  data_maxmean_std = data_maxmean_std.sort_values(by=['pos_q','sMaxmean'],ascending=[True,False])
+  data_maxmean_std = data_maxmean_std.sort_values(by=['pos_q','NScore'],ascending=[True,False])
   data_maxmean_std = data_maxmean_std.reset_index(drop=True)
   data_maxmean_std['pos_rank'] = data_maxmean_std.index + 1
   data_maxmean_std['neg_rank'] = data_maxmean_std.shape[0] - data_maxmean_std['pos_rank']
@@ -208,6 +208,7 @@ def runStatinfer(infile,outfile,multiplier):
   null_sdf = standardizeDF(null_maxmean_df,factor_df)
   data_sdf.to_csv("test_real_standardize.txt",sep="\t",header=True,index=False)
   fdf = getPQ(data_sdf,null_sdf)
+  fdf = fdf.loc[:,['Gene','sgcount','NScore','pos_p','pos_fdr','neg_p','neg_fdr','pos_rank','neg_rank']]
   fdf.to_csv(outfile,sep="\t",index=False)
 
 def main():

@@ -5,7 +5,7 @@ Setup script for sgRSEA
 Copyrigh (c) Beibei Chen <beibei.chen@utsouthwestern.edu>
 
 This code is free software; you can redistribute it and/or modify it
-under the terms of the BSD License (See the file COPYING included with
+under the terms of the MIT License (See the file COPYING included with
 the distribution)
 
 @status: alpha
@@ -21,26 +21,20 @@ from setuptools import setup, Extension, find_packages
 command_classes = {}
 
 try:
-  from numpy import get_include as numpy_get_include
-  numpy_include_dir = [numpy_get_include()]
+  import numpy
 except:
-  numpy_include_dir = []
   sys.stderr.write("CRITICAL: Numpy must be installed!\n")
   sys.exit(1)
 
 try:
-  from pandas import get_include as pandas_get_include
-  pandas_include_dir = [pandas_get_include()]
+  import pandas
 except:
-  pandas_include_dir = []
   sys.stderr.write("CRITICAL: Pandas must be installed!\n")
   sys.exit(1)
 
 try:
-  from statsmodels import get_include as statsmodels_get_include
-  statsmodels_include_dir = [statsmodels_get_include()]
+  import statsmodels
 except:
-  statsmodels_include_dir = []
   sys.stderr.write("CRITICAL: Statsmodels must be installed!\n")
   sys.exit(1)
 
@@ -52,20 +46,20 @@ def main():
   #ext_modules = 
   setup(name='sgrsea',
       version='0.1',
-      description='Identify enriched genes in CRISPR-Cas9 experiment',
+      description='Enrichment Analysis of CRISPR/Cas9 Knockout Screen Data',
       #url='https://github.com/QBRC/Crispr',
       author='Beibei Chen',
       author_email='beibei.chen@utsouthwestern.edu',
       license='MIT',
-      package_dir={'sgrsea':'sgrsea'},#,'bin':'bin','test':'test'},
+      package_dir={'sgrsea':'sgrsea'},#,'test':'test'},
       packages=['sgrsea'],
-      scripts=['bin/sgrsea'],
+      scripts=['bin/sgrsea',],
       classifiers=[
         'Development Status :: 1 - Dev',
         'Environment :: Console',
         'Intended Audience :: Developers',
         'Intended Audience :: Science/Research',
-        'License :: OSI Approved :: BSD License',
+        'License :: OSI Approved :: MIT License',
         'Operating System :: MacOS :: MacOS X',
         'Operating System :: POSIX',
         'Topic :: Scientific/Engineering :: Bio-Informatics',

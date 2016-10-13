@@ -167,7 +167,7 @@ def getPQ(data_maxmean_std,null_maxmean_std):
   data_maxmean_std['neg_fdr'] = multipletests(data_maxmean_std.loc[:,'neg_p'],method='fdr_bh')[1]
   #data_maxmean_std['pos_rank'] = data_maxmean_std['pos_p'].rank().astype(int)
   #data_maxmean_std['neg_rank'] = data_maxmean_std['neg_p'].rank().astype(int)
-  data_maxmean_std = data_maxmean_std.sort_values(by=['pos_q','NScore'],ascending=[True,False])
+  data_maxmean_std = data_maxmean_std.sort_values(by=['pos_fdr','NScore'],ascending=[True,False])
   data_maxmean_std = data_maxmean_std.reset_index(drop=True)
   data_maxmean_std['pos_rank'] = data_maxmean_std.index + 1
   data_maxmean_std['neg_rank'] = data_maxmean_std.shape[0] - data_maxmean_std['pos_rank']

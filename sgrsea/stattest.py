@@ -61,8 +61,8 @@ def dataFilter(dataFile,sg_min = 1):
   logging.debug(type(filter_data))
   logging.debug(filter_data.columns.values)
   #filter_data['zstat'] = filter_data.loc[:,['treat_1','ctrl_1']].apply(lambda row: zStat(row.to_frame(['treat_1','ctrl_1']),0.4))
-  gene_label = filter_data.loc[:,'Gene']
-  return (filter_data,gene_label)
+  gene_sample = filter_data.loc[:,'Gene']
+  return (filter_data,gene_sample)
 
 
 def pMME(treat, ctrl):

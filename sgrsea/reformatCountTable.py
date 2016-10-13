@@ -21,7 +21,7 @@ def prepare_argparser():
   argparser.add_argument("-t","--treatment",dest="treat",type=str,required=True, help = "columns/name of treatment samples")
   argparser.add_argument("-c","--control",dest="ctrl",type=str,required=True, help="columns/name of control samples")
   argparser.add_argument("--collapse-replicates",dest="collapsemethod",type=str, help = "Way to collapse replicates", default="auto", choices=['auto','stack','mean'])
-  #argparser.add_argument("--c-label",dest="ctrllabel",type=str, help="label of control samples")
+  #argparser.add_argument("--c-sample",dest="ctrlsample",type=str, help="sample of control samples")
   return(argparser)
 
 
@@ -46,10 +46,10 @@ def runReformat(infile, designfile, ofile, t, c, collapsemethod):
     control_cols = np.array(c.split(","),dtype=str)
     fnames = []
     for tgroup,cgroup in zip(treatment_cols, control_cols):
-      t_label = dfile[dfile['group']==tgroup].loc[:,'label'].unique()
-      c_label = dfile[dfile['group']==cgroup].loc[:,'label'].unique()
-      t_cols = mapcolindex(cfile._get_numeric_data().columns,t_label)
-      c_cols = mapcolindex(cfile._get_numeric_data().columns,c_label)
+      t_sample = dfile[dfile['group']==tgroup].loc[:,'sample'].unique()
+      c_sample = dfile[dfile['group']==cgroup].loc[:,'sample'].unique()
+      t_cols = mapcolindex(cfile._get_numeric_data().columns,t_sample)
+      c_cols = mapcolindex(cfile._get_numeric_data().columns,c_sample)
       df = reformat(cfile, t_cols, c_cols,collapsemethod)
       outname = ofile+"_"+tgroup+"_vs_"+cgroup
       df.to_csv(outname,sep="\t",index=False)
@@ -57,10 +57,10 @@ def runReformat(infile, designfile, ofile, t, c, collapsemethod):
     return fnames
 
 
-def mapcolindex(header,labels):
+def mapcolindex(header,samples):
   col = []
   for i,v in enumerate(header):
-    if v in (labels):
+    if v in (samples):
       col.append(i)
   return col
 

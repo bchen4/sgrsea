@@ -142,6 +142,12 @@ optional arguments:
                         Multiplier to generate background
 ```
 
+##Examples
+
+Run the suite:
+```python
+sgrsea run -d ../test/fulldata/design.txt -o ../test/fulldata/testfull --multiplier 100 -t BR,DI -c UN,UN --split-lib
+```
 
 
 ##Input
@@ -174,11 +180,10 @@ When you are using the suite for your experiment, you need to prepare a design f
 Design file has to include all the essential columns (Please use exactly the same column names, order does not matter):
 
 * **filepath**: The absolute path to the fastq file
-* **lib**: The absolute path the the library file. If there is no sublib, this column should has the same value across all rows
+* **lib**: The absolute path of the library file. If there is no sublib, this column should has the same value across all rows
 * **sublib**: The sample for sublib. Eg: GeCKO_libA, GeCKO_libB. Use this when you sequence sublib separately
-* **sample**: The user friendly sample for each sample. 
-* **group**: This will be used as output prefix for each sample. Please DON'T use " ", "-" in the sample 
-
+* **sample**: Name of each sample. Note that don't include sublib information here 
+* **group**: This will be used as output prefix for each sample. Please DON'T use " ", "-" in the content
 * **sgstart**: The first nucleotide of sgRNA. 1-index
 * **sgstop**: The last nucleotide of sgRNA. 1-index
 * **trim3**: Sequence pattern of the 3' adaptor. Usually 5~7nt. If provided, the program will look for perfect match of this pattern in fastq sequence. The last match and all nucleotides after that will be trimmed. If you don't need this, put "NA" in the design file
@@ -198,10 +203,25 @@ In the above example, there are 1 treatment and 1 control. Library A and B are s
 ##Output
 
 ###Count matrix (w/wo normalization)
+The count matrix will contain basic sgRNA, gene, sequence, sublib information with counts of each sample as an extra column.
+The normalization matrix will contain sgRNA, gene information, along with normalized counts of each sample as an extra column.
 
 ###sgRSEA formatted matrix
+This matrix has four columns, sgRNA, Gene, treatment, control.
+If there are multiple comparisons, multiple files will be generated.
 
 ###sgRSEA stattest output file 
+For each comparison, there will be a result file. Columns are:
+* Gene: name of the gene
+* sgcount: number of sgRNA per gene
+* NScore: normalized maxmean score
+* pos_p: p value for positive selection
+* pos_fdr: FDR for positive selection
+* pos_rank: gene rank for positive selection
+* neg_p: p value for negative selection
+* neg_fdr: FDR for negative selection
+* neg_rank: gene rank for negative selection
+
 
 
 ##License

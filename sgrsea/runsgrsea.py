@@ -41,11 +41,11 @@ def prepare_argparser():
   return argparser
 
 def run(args):
-  if args.infile != None:
-    logging.info("This is one-file mode, only count and do noramlization")
-  sgcount.run(agrs)
-  if os.path.exists(args.outfile+".count.txt"):#count matrix file exsists
-    normalization.normalization(args.outfile+".count.txt",args.outfile+".norm.txt",args.method, args.splitlib)
+#BC  if args.infile != None:
+#BC    logging.info("This is one-file mode, only count and do noramlization")
+#BC  sgcount.run(agrs)
+#BC  if os.path.exists(args.outfile+".count.txt"):#count matrix file exsists
+#BC    normalization.normalization(args.outfile+".count.txt",args.outfile+".norm.txt",args.method, args.splitlib)
   if os.path.exists(args.outfile+".norm.txt"):
     files = reformatCountTable.runReformat(args.outfile+".norm.txt",args.designfile, args.outfile,args.treat, args.ctrl, args.collapsemethod)
   for fn in files:

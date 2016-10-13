@@ -25,7 +25,7 @@ def prepare_argparser():
   return(argparser)
 
 
-def runRformat(infile, designfile, ofile, t, c, collapsemethod):
+def runReformat(infile, designfile, ofile, t, c, collapsemethod):
   '''
   If treatment and control are numeric, there is no need of design file.
   '''
@@ -50,8 +50,8 @@ def runRformat(infile, designfile, ofile, t, c, collapsemethod):
       c_label = dfile[dfile['group']==cgroup].loc[:,'label'].unique()
       t_cols = mapcolindex(cfile._get_numeric_data().columns,t_label)
       c_cols = mapcolindex(cfile._get_numeric_data().columns,c_label)
-      df = reformat(cfile, t_cols, c_cols)
-      outname = ofile+"_"+t_label[0]+"_vs_"+c_label[0]
+      df = reformat(cfile, t_cols, c_cols,collapsemethod)
+      outname = ofile+"_"+tgroup+"_vs_"+cgroup
       df.to_csv(outname,sep="\t",index=False)
       fnames.append(outname)
     return fnames
@@ -65,12 +65,14 @@ def mapcolindex(header,labels):
   return col
 
 def stackReplicates(cfile,treatcols,ctrlcols):
+  #logging.debug(treatcols)
+  #logging.debug(ctrlcols)
   nfile = cfile._get_numeric_data()
   df = cfile.loc[:,['sgRNA','Gene']].join(nfile.iloc[:,[treatcols[0],ctrlcols[0]]])
   df.columns = ['sgRNA','Gene','treatment','control']
   for tc, cc in zip(treatcols[1:],ctrlcols[1:]):
-    logging.debug(tc)
-    logging.debug(cc)
+    #logging.debug(tc)
+    #logging.debug(cc)
     newdf = cfile.loc[:,['sgRNA','Gene']].join(nfile.iloc[:,[tc,cc]])
     newdf.columns = df.columns
     df = df.append(newdf)
@@ -86,9 +88,9 @@ def averageReplicates(cfile, treatcols, ctrlcols):
 def reformat(cfile, treatcols, ctrlcols, method):
   if method == "auto":
     if len(treatcols)!=len(ctrlcols):#take average
-      df = averageReplicates(cfile, treatcols, ctrlcols, method)
+      df = averageReplicates(cfile, treatcols, ctrlcols)
     else:#combine
-      df = stackReplicates(cfile,treatcols, ctrlcols, method)
+      df = stackReplicates(cfile,treatcols, ctrlcols)
   return df
 
 def run():

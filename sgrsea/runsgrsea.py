@@ -41,16 +41,27 @@ def prepare_argparser():
   return argparser
 
 def run(args):
-#BC  if args.infile != None:
-#BC    logging.info("This is one-file mode, only count and do noramlization")
-#BC  sgcount.run(agrs)
-#BC  if os.path.exists(args.outfile+".count.txt"):#count matrix file exsists
-#BC    normalization.normalization(args.outfile+".count.txt",args.outfile+".norm.txt",args.method, args.splitlib)
-  if os.path.exists(args.outfile+".norm.txt"):
-    files = reformatCountTable.runReformat(args.outfile+".norm.txt",args.designfile, args.outfile,args.treat, args.ctrl, args.collapsemethod)
-  for fn in files:
-    logging.info("Running test on "+fn)
-    stattest.runStatinfer(fn,fn+".sgRSEA.xls",args.multiplier)
+  if isinstance(args.infile, str):
+    logging.info("This is one-file mode, only count and do noramlization")
+  sgcount.run(args)
+  if os.path.exists(args.outfile+".count.txt"):#count matrix file exsists
+    normalization.normalization(args.outfile+".count.txt",args.outfile+".norm.txt",args.method, args.splitlib)
+  else:
+    logging.error("There is no count file. Exit.")
+    sys.exit(1)
+  if isinstance(args.designfile,str):#multiple files, go further
+    if os.path.exists(args.outfile+".norm.txt"):
+      files = reformatCountTable.runReformat(args.outfile+".norm.txt",args.designfile, args.outfile,args.treat, args.ctrl, args.collapsemethod)
+    else:
+      logging.error("There is no normalized count file. Exit.")
+      sys.exit(1)
+    if len(files)==0:
+      logging.error("There is no input files for sgRSEA to run. Exit.")
+      sys.exit(1)
+    else:
+      for fn in files:
+        logging.info("Running test on "+fn)
+        stattest.runStatinfer(fn,fn+".sgRSEA.xls",args.multiplier)
 
 def main():
   argparser = prepare_argparser()

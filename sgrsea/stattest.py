@@ -58,8 +58,8 @@ def addZstat(data_df, pNull):
 def dataFilter(dataFile,sg_min = 1):
   '''Get table of sgRNA number per gene distribution. Filter out the genes with sgRNA number less than sg_min'''
   filter_data = dataFile.groupby('Gene').filter(lambda x : len(x)>=sg_min)
-  logging.debug(type(filter_data))
-  logging.debug(filter_data.columns.values)
+  #logging.debug(type(filter_data))
+  #logging.debug(filter_data.columns.values)
   #filter_data['zstat'] = filter_data.loc[:,['treat_1','ctrl_1']].apply(lambda row: zStat(row.to_frame(['treat_1','ctrl_1']),0.4))
   gene_sample = filter_data.loc[:,'Gene']
   return (filter_data,gene_sample)
@@ -102,7 +102,7 @@ def getMatrixMaxmean(filtered_zdf):
   '''
   maxmean_df = filtered_zdf.groupby("Gene").agg({'zstat':maxMean,'sgRNA':'count'}).reset_index()
   maxmean_df.columns = ["Gene","maxmean","sgcount"]
-  logging.debug(maxmean_df.head(10))
+  #logging.debug(maxmean_df.head(10))
   return maxmean_df
 
 #DEP#def sampleNull(genelist,bgFile):
@@ -183,7 +183,7 @@ def runStatinfer(infile,outfile,multiplier):
   if p0 ==0 or p0 ==1:
     logging.error("pMME for background equals to 0/1, indicating no counts for treatment or control. Please check your data. Exit.")
     sys.exit(1)
-  logging.debug(p0) 
+  #logging.debug(p0) 
   dataFile.columns = ['sgRNA','Gene','treat','ctrl']
   dataFile = addZstat(dataFile,p0)
   #logging.debug(dataFile.head(10))
@@ -200,9 +200,9 @@ def runStatinfer(infile,outfile,multiplier):
 #BC#    bgFile = filtered_data
   null_maxmean_df = maxmeanSampleNull(genelist,filtered_data,multiplier)
   null_maxmean_df.to_csv("null_maxmean_df.xls",sep="\t",index=False)
-  logging.debug("Get standardize factors")
+  #logging.debug("Get standardize factors")
   factor_df = standardizeFactor(null_maxmean_df)
-  logging.debug(factor_df)
+  #logging.debug(factor_df)
   logging.info("Standardization...")
   data_sdf = standardizeDF(data_maxmean_df,factor_df)
   null_sdf = standardizeDF(null_maxmean_df,factor_df)

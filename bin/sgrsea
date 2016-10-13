@@ -51,7 +51,7 @@ def add_run_parser(subparsers):
   subc_run.add_argument("--split-lib",dest = "splitlib",action='store_true', help="Lib A and B are sequenced separately")
   subc_run.add_argument("-t","--treatment",dest="treat",type=str,required=True, help = "columns/name of treatment samples")
   subc_run.add_argument("-c","--control",dest="ctrl",type=str,required=True, help="columns/name of control samples")
-  subc_run.add_argument("--multiplier",dest = "multiplier",type=int, default = 30,required=True, help = "Multiplier to generate background")
+  subc_run.add_argument("--multiplier",dest = "multiplier",type=int, default = 50, help = "Multiplier to generate background")
   subc_run.add_argument("--collapse-replicates",dest="collapsemethod",type=str, help = "Way to collapse replicates", default="auto", choices=['auto','stack','mean'])
 
   #subc_run.add_argument("--bgtag",dest = "bgtag",type=str, default = "",help = "Sting to identify control sgRNAs")
@@ -101,7 +101,7 @@ def add_stattest_parser(subparsers):
   subc_stattest = subparsers.add_parser("stattest", help="Identify significant genes from normalized count table")
   subc_stattest.add_argument("-i","--input",dest = "infile",type=str,required=True, help = "sgRSEA input file, 4 columns")
   subc_stattest.add_argument("-o","--output",dest = "outfile",type=str,required=True, help = "output file name")
-  subc_stattest.add_argument("--multiplier",dest = "multiplier",type=int, default = 30,required=True, help = "Multiplier to generate background")
+  subc_stattest.add_argument("--multiplier",dest = "multiplier",type=int, default = 50, help = "Multiplier to generate background")
   #subc_stattest.add_argument("--bgtag",dest = "bgtag",type=str, default = "",help = "Sting to identify control sgRNAs")
   #subc_stattest.add_argument("--bg-row-start",dest = "bgrowstart",type=int,default = -1, help = "Row count of the start of control sgRNA block")
   #subc_stattest.add_argument("--bg-row-stop",dest = "bgrowstop",type=int, default=-1, help = "Row count of the stop of control sgRNA block")

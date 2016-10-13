@@ -32,7 +32,7 @@ def prepare_argparser():
   argparser.add_argument("-c","--control",dest="ctrl",type=str,required=True, help="columns/name of control samples")
   argparser.add_argument("--t-lable",dest="treatlabel",type=str, help = "label of treatment samples")
   argparser.add_argument("--c-label",dest="ctrllabel",type=str, help="label of control samples")
-  argparser.add_argument("--multiplier",dest = "multiplier",type=int, default = 30,required=True, help = "Multiplier to generate background")
+  argparser.add_argument("--multiplier",dest = "multiplier",type=int, default = 50, help = "Multiplier to generate background")
   argparser.add_argument("--collapse-replicates",dest="collapsemethod",type=str, help = "Way to collapse replicates", default="auto", choices=['auto','stack','mean'])
 
   #argparser.add_argument("--bgtag",dest = "bgtag",type=str, default = "",help = "Sting to identify control sgRNAs")

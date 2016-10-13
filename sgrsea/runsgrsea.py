@@ -12,6 +12,7 @@ import sgcount
 import normalization
 import stattest
 import reformatCountTable 
+from multiprocessing import Process, Queue
 logging.basicConfig(level=10)
 
 def prepare_argparser():
@@ -60,10 +61,20 @@ def run(args):
       logging.error("There is no input files for sgRSEA to run. Exit.")
       sys.exit(1)
     else:
+      work_num = len(files)
+      work_queue = Queue()
+      workers = []
       for fn in files:
         logging.info("Running test on "+fn)
-        stattest.runStatinfer(fn,fn+".sgRSEA.xls",args.multiplier)
+        p = Process(target = callstat, args=(work_queue,fn,fn+".sgRSEA.xls",args.multiplier))
+        workers.append(p)
+        p.start()
+      for process in workers:
+        process.join()
 
+def callstat(queue, fname, outname, multiplier):
+  queue.put(stattest.runStatinfer(fname,outname,multiplier))
+  
 def main():
   argparser = prepare_argparser()
   args = argparser.parse_args()

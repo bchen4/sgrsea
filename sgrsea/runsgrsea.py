@@ -44,7 +44,7 @@ def run(args):
   if isinstance(args.infile, str):
     logging.info("This is one-file mode, only count and do noramlization")
   #logging.info("Start to count fastq")
-  #sgcount.run(args)
+  sgcount.run(args)
   if os.path.exists(args.outfile+".count.txt"):#count matrix file exsists
     normalization.normalization(args.outfile+".count.txt",args.outfile+".norm.txt",args.method, args.splitlib)
   else:

@@ -149,10 +149,10 @@ optional arguments:
 ###[Fastq file](https://en.wikipedia.org/wiki/FASTQ_format)
 
 ###Library file
-Library file should have no header, with 3 columns in the following order: 
-* gene name 
-* sgRNA id
-* sgRNA sequence
+Library file should have 3 columns in the following order, with the column names exactly the same: 
+* Gene 
+* sgRNA
+* Sequence
 
 Example:
 ```

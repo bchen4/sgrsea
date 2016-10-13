@@ -175,15 +175,17 @@ Design file has to include all the essential columns (Please use exactly the sam
 
 * **filepath**: The absolute path to the fastq file
 * **lib**: The absolute path the the library file. If there is no sublib, this column should has the same value across all rows
-* **sublib**: The label for sublib. Eg: GeCKO_libA, GeCKO_libB. Use this when you sequence sublib separately
-* **label**: The user friendly label for each sample. This will be used as output prefix for each sample. Please DON'T use " ", "-" in the label 
+* **sublib**: The sample for sublib. Eg: GeCKO_libA, GeCKO_libB. Use this when you sequence sublib separately
+* **sample**: The user friendly sample for each sample. 
+* **group**: This will be used as output prefix for each sample. Please DON'T use " ", "-" in the sample 
+
 * **sgstart**: The first nucleotide of sgRNA. 1-index
 * **sgstop**: The last nucleotide of sgRNA. 1-index
 * **trim3**: Sequence pattern of the 3' adaptor. Usually 5~7nt. If provided, the program will look for perfect match of this pattern in fastq sequence. The last match and all nucleotides after that will be trimmed. If you don't need this, put "NA" in the design file
 
 Example
 ```
-filepath          label lib                                 sublib  group     sgstart  sgstop  trim3
+filepath          sample lib                                 sublib  group     sgstart  sgstop  trim3
 UA1_R1_001.fastq  SS_U1 Human_GeCKOv2_Library_A_3.uniq.txt  LibA    CONTROL   34       53      False
 UB1_R1_001.fastq  SS_U1 Human_GeCKOv2_Library_B_1.uniq.txt  LibB    CONTROL   36       55      False
 HA1_R1_001.fastq  SS_H1 Human_GeCKOv2_Library_A_3.uniq.txt  LibA    TREATMENT 42       61      False

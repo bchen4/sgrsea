@@ -72,20 +72,20 @@ def generatefinaltable(resultdic, totaldic, lib, dfile):
   count_columns.insert(3,count_columns.pop(count_columns.index('sublib')))
   count_df = count_df.loc[:,count_columns]
   mapped_total = count_df.iloc[:,3:].groupby("sublib").sum().reset_index()
-  mapped_total_df = pd.melt(mapped_total, id_vars=['sublib'],var_name=['label'],value_name='mapped_reads')
+  mapped_total_df = pd.melt(mapped_total, id_vars=['sublib'],var_name=['sample'],value_name='mapped_reads')
   totalread_df = pd.DataFrame(totaldic.items(),columns=["filepath","total_reads"])
   if isinstance(dfile,pd.DataFrame):
     summary_df = dfile.merge(totalread_df,on="filepath")
-    summary_df = summary_df.merge(mapped_total_df,on=['sublib','label'])
+    summary_df = summary_df.merge(mapped_total_df,on=['sublib','sample'])
   else:#single file
     summary_df = totalread_df
     summary_df = summary_df.join(mapped_total_df)
   summary_df['mapping_ratio'] = summary_df['mapped_reads']/summary_df['total_reads']
-  summary_df = summary_df.loc[:,['filepath','label','sublib','total_reads','mapped_reads','mapping_ratio']]
+  summary_df = summary_df.loc[:,['filepath','sample','sublib','total_reads','mapped_reads','mapping_ratio']]
   return (count_df, summary_df)
 
-def callsgcount(queue,fname,sgstart,sgstop,trim3,label,sublib):
-  queue.put(sgcount(fname,sgstart,sgstop,trim3,label,sublib))
+def callsgcount(queue,fname,sgstart,sgstop,trim3,sample,sublib):
+  queue.put(sgcount(fname,sgstart,sgstop,trim3,sample,sublib))
 
 def multicount(dfile):
   '''
@@ -99,7 +99,7 @@ def multicount(dfile):
   for index in range(work_num):
     record = dfile.iloc[index,:]
     p = Process(target=callsgcount, args=(work_queue,record['filepath'],
-      record['sgstart'],record['sgstop'],record['trim3'],record['label'],record['sublib']))
+      record['sgstart'],record['sgstop'],record['trim3'],record['sample'],record['sublib']))
     workers.append(p)
     p.start()
   
@@ -108,17 +108,17 @@ def multicount(dfile):
     process.join()
   
   #get results
-  logging.info("Retrive results")
+  #logging.info("Retrive results")
   total_fq_count = {}
-  groupfile = {}
+  samplefile = {}
   for i in range(work_num):
     (fqfilename,total_count,fsublib) = work_queue.get()#output should be a Pandas df
     total_fq_count[fqfilename] = total_count
-    if not groupfile.has_key(fsublib):
-      groupfile[fsublib] = []
-    groupfile[fsublib].append(fqfilename)
+    if not samplefile.has_key(fsublib):
+      samplefile[fsublib] = []
+    samplefile[fsublib].append(fqfilename)
   result_dic ={}
-  for sublibname, files in groupfile.items():
+  for sublibname, files in samplefile.items():
     result = pd.read_table(files[0]+".tmpcount")
     try:
       os.remove(files[0]+".tmpcount")
@@ -137,7 +137,7 @@ def multicount(dfile):
 def makelib(libs, sublib):
   '''
   #Pandas dataframe columns are: ['sgRNA','Gene','Sequence','sublib']
-  return a dictionary with label as the key and df as value
+  return a dictionary with sample as the key and df as value
   '''
   lib_dic = {}
   for i in range(len(libs)):
@@ -166,7 +166,7 @@ def trimseq(seq,start,stop,trim3=None):
   return trim_seq
 
 
-def sgcount(fqfile,sgstart, sgstop, trim3, label="count",sublib="sublib"):
+def sgcount(fqfile,sgstart, sgstop, trim3, sample="count",sublib="sublib"):
   '''
   Count sequence frequency in a fastq file.
   Write result in a temp file due to Python multiprocessing hang with huge result. (It can only handle int and string, not a instance of a class)
@@ -177,15 +177,15 @@ def sgcount(fqfile,sgstart, sgstop, trim3, label="count",sublib="sublib"):
   for record in SeqIO.parse(fqfile,"fastq"):
     total_count += 1
     if total_count % 500000 ==0:
-      logging.info("Processed "+fqfile+" "+str(total_count)+" reads...")
-      #break
+      #logging.info("Processed "+fqfile+" "+str(total_count)+" reads...")
+      break
     sequence =  trimseq(str(record.seq),sgstart, sgstop, trim3)
     print >> trim_out, ">"+record.id+"\n"+sequence
     if not seqdic.has_key(sequence):
       seqdic[sequence] = 0
     seqdic[sequence]+=1
-  seq_count = pd.DataFrame(seqdic.items(),columns=['Sequence',label])
-  logging.info(seq_count.shape)
+  seq_count = pd.DataFrame(seqdic.items(),columns=['Sequence',sample])
+  #logging.info(seq_count.shape)
   seq_count.to_csv(fqfile+".tmpcount",sep="\t",index=False)
   trim_out.close()
   return (fqfile,total_count,sublib)

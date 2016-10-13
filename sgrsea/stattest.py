@@ -135,23 +135,23 @@ def standardizeFactor(null_maxmean):
   factor_df = pd.DataFrame({'mean':group_null_maxmean.maxmean.agg(np.mean),'std':group_null_maxmean.maxmean.agg(np.std)}).reset_index()
   return factor_df
   
-def standardize(datarow,factors):
-  '''Datarow is a pd.Series, index is ['gene','maxmean','sgcount']'''
-  factor = factors[factors['sgcount']==datarow.sgcount]
-  if factor.shape[0]==1:#Should be only one record
-    f_mean = factor.iloc[0]['mean']
-    f_std = factor.iloc[0]['std']
-  elif factor.shape[0]==0:
-    logging.warning("There is no record for genes with "+str(datarow.sgcount)+" sgRNAs. ")
-  else:#more than 1 record
-    logging.warning("There are more than 1 record for sgRNA count "+str(datarow.sgcount+" group. Check data."))
-  smm = (datarow.maxmean-f_mean)*1.0/f_std
-  return smm
+#DEP#def standardize(datarow,factors):
+#DEP#  '''Datarow is a pd.Series, index is ['gene','maxmean','sgcount']'''
+#DEP#  factor = factors[factors['sgcount']==datarow.sgcount]
+#DEP#  if factor.shape[0]==1:#Should be only one record
+#DEP#    f_mean = factor.iloc[0]['mean']
+#DEP#    f_std = factor.iloc[0]['std']
+#DEP#  elif factor.shape[0]==0:
+#DEP#    logging.warning("There is no record for genes with "+str(datarow.sgcount)+" sgRNAs. ")
+#DEP#  else:#more than 1 record
+#DEP#    logging.warning("There are more than 1 record for sgRNA count "+str(datarow.sgcount+" group. Check data."))
+#DEP#  smm = (datarow.maxmean-f_mean)*1.0/f_std
+#DEP#  return smm
 
 def standardizeDF(maxmean_df,sFactors):
   #BC#maxmean_df['sMaxmean'] = maxmean_df.apply(lambda x: standardize(x,sFactors),axis=1)
   df = maxmean_df.merge(sFactors,on="sgcount",how="left")
-  df['sMaxmean'] = (df['maxmean']-df['mean']/df['std'])
+  df['sMaxmean'] = (df['maxmean']-df['mean'])/df['std']
   return df
  #BC# return maxmean_df
   

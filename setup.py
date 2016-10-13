@@ -20,29 +20,29 @@ from setuptools import setup, Extension, find_packages
 
 command_classes = {}
 
-#try:
-#  from numpy import get_include as numpy_get_include
-#  numpy_include_dir = [numpy_get_include()]
-#except:
-#  numpy_include_dir = []
-#  sys.stderr.write("CRITICAL: Numpy must be installed!\n")
-#  sys.exit(1)
-#
-#try:
-#  from pandas import get_include as pandas_get_include
-#  pandas_include_dir = [pandas_get_include()]
-#except:
-#  pandas_include_dir = []
-#  sys.stderr.write("CRITICAL: Pandas must be installed!\n")
-#  sys.exit(1)
-#
-#try:
-#  from statsmodels import get_include as statsmodels_get_include
-#  statsmodels_include_dir = [statsmodels_get_include()]
-#except:
-#  statsmodels_include_dir = []
-#  sys.stderr.write("CRITICAL: Statsmodels must be installed!\n")
-#  sys.exit(1)
+try:
+  from numpy import get_include as numpy_get_include
+  numpy_include_dir = [numpy_get_include()]
+except:
+  numpy_include_dir = []
+  sys.stderr.write("CRITICAL: Numpy must be installed!\n")
+  sys.exit(1)
+
+try:
+  from pandas import get_include as pandas_get_include
+  pandas_include_dir = [pandas_get_include()]
+except:
+  pandas_include_dir = []
+  sys.stderr.write("CRITICAL: Pandas must be installed!\n")
+  sys.exit(1)
+
+try:
+  from statsmodels import get_include as statsmodels_get_include
+  statsmodels_include_dir = [statsmodels_get_include()]
+except:
+  statsmodels_include_dir = []
+  sys.stderr.write("CRITICAL: Statsmodels must be installed!\n")
+  sys.exit(1)
 
 def main():
   #if not 2.7 < float(sys.version[:3]) < 2.8:
@@ -56,7 +56,7 @@ def main():
       #url='https://github.com/QBRC/Crispr',
       author='Beibei Chen',
       author_email='beibei.chen@utsouthwestern.edu',
-      license='BSD',
+      license='MIT',
       package_dir={'sgrsea':'sgrsea'},#,'bin':'bin','test':'test'},
       packages=['sgrsea'],
       scripts=['bin/sgrsea'],

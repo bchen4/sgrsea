@@ -24,18 +24,16 @@
 
 <p>sgRSEA is a tool to identify significant genes in GeCKO experiments.</p>
 
-<p>Version:alpha</p>
-
-<p>Last modified: 10/10/2016</p>
+<p>Version:v0.0.1</p>
 
 <p>Authors: Beibei Chen (<a href="mailto:beibei.chen@utsouthwestern.edu">beibei.chen@utsouthwestern.edu</a>), Jungsik Noh (<a href="mailto:junsik.noh@utsouthwestern.edu">junsik.noh@utsouthwestern.edu</a>)</p>
 
 <p>Maintainer: Beibei Chen</p>
 
-<p><a href="http://">Download the latest stable version of sgRSEA</a>
+<p><a href="https://github.com/bchen4/sgrsea">Download the latest stable version of sgRSEA</a>
 <a href="https://cran.r-project.org/web/packages/sgRSEA/index.html">Download the R package of sgRSEA</a></p>
 
-<p>For detailed <a href="wiki%20page">manual</a></p>
+<p>For detailed <a href="https://github.com/bchen4/sgrsea/wiki/Manual">manual</a></p>
 
 <h2>
 <a id="prerequisites" class="anchor" href="#prerequisites" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Prerequisites</h2>
@@ -67,218 +65,18 @@
 <div class="highlight highlight-source-python"><pre>python setup.py install</pre></div>
 
 <h2>
-<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h2>
+<a id="quick-start" class="anchor" href="#quick-start" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Quick start</h2>
 
 <p>sgRSEA can be run on specific steps as well as fastq-to-result using a single command.</p>
-
-<pre><code>sgRSEA: identify significant genes in CRISPR-Cas9 experiment
-
-positional arguments:
-  {count,reformat,run,stattest,normalization}
-    run                 Run the whole program from fastq to result
-    count               Get sgRNA count matrix
-    normalization       Normalize sgRNA count matrix
-    reformat            Reformat count table for sgRSEA stat test
-    stattest            Identify significant genes from normalized count table
-
-optional arguments:
-  -h, --help            show this help message and exit
-
-For command line options of each command, type sgrsea COMMAND -h
-</code></pre>
-
-<h3>
-<a id="get-count-matrix-from-fastq-files" class="anchor" href="#get-count-matrix-from-fastq-files" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Get count matrix from fastq files</h3>
-
-<p><strong>sgRSEA count</strong> can be used on single fastq file and multiple fastq files. When using multiple fastq files, a <a href="http://">design file</a> containing design information should be provided.</p>
-
-<div class="highlight highlight-source-shell"><pre>usage: sgrsea count [-h] [-i INFILE <span class="pl-k">|</span> <span class="pl-k">-d</span> DESIGNFILE] -o OUTFILE [-l LIBFILE]
-                    [--sgstart SGSTART] [--sgstop SGSTOP] [--trim3 TRIM3]
-
-optional arguments:
-  -h, --help            show this <span class="pl-c1">help</span> message and <span class="pl-c1">exit</span>
-  -i INFILE, --input INFILE
-                        input fastq
-  -d DESIGNFILE, --design DESIGNFILE
-                        design file
-  -o OUTFILE, --output OUTFILE
-                        output
-  -l LIBFILE, --library LIBFILE
-                        Gene locus <span class="pl-k">in</span> bed format
-  --sgstart SGSTART     The first nucleotide sgRNA starts. 1-index
-  --sgstop SGSTOP       The last nucleotide sgRNA starts. 1-index
-  --trim3 TRIM3         The trimming pattern from 3<span class="pl-s"><span class="pl-pds">'</span>. This pattern and the</span>
-<span class="pl-s">                        following sequence will be removed</span></pre></div>
-
-<h3>
-<a id="normalize-sgrna-count-matrix" class="anchor" href="#normalize-sgrna-count-matrix" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Normalize sgRNA count matrix</h3>
-
-<div class="highlight highlight-source-shell"><pre>usage: sgrsea normalization [-h] -i INFILE
-                            [--normalize-method {total,median,upperquantile}]
-                            -o OUTFILE [--split-lib]
-
-optional arguments:
-  -h, --help            show this <span class="pl-c1">help</span> message and <span class="pl-c1">exit</span>
-  -i INFILE, --input INFILE
-                        input count file matrix
-  --normalize-method {total,median,upperquantile}
-                        design file
-  -o OUTFILE, --output OUTFILE
-                        output
-  --split-lib           Lib A and B are sequenced separately</pre></div>
-
-<h3>
-<a id="convert-data-matrix-to-sgrsea-input" class="anchor" href="#convert-data-matrix-to-sgrsea-input" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Convert data matrix to sgRSEA input</h3>
-
-<p>sgRSEA takes a data matrix with 4 columns: sgRNA, Gene, treatment, control.
-<strong>sgreas reformat</strong> to collapse replicates and make multiple input files for <em>stattest</em> if there are more than 1 comparison needed to be done accroding to the design file.</p>
-
-<div class="highlight highlight-source-shell"><pre>usage: sgrsea reformat [-h] -i INFILE -o OUTFILE [-d DESIGNFILE] -t TREAT -c
-                       CTRL [--collapse-replicates {auto,stack,mean}]
-
-optional arguments:
-  -h, --help            show this <span class="pl-c1">help</span> message and <span class="pl-c1">exit</span>
-  -i INFILE, --input INFILE
-                        input BAM file
-  -o OUTFILE, --output OUTFILE
-                        output
-  -d DESIGNFILE, --design DESIGNFILE
-                        output
-  -t TREAT, --treatment TREAT
-                        columns/name of treatment samples
-  -c CTRL, --control CTRL
-                        columns/name of control samples
-  --collapse-replicates {auto,stack,mean}
-                        Way to collapse replicates</pre></div>
-
-<h3>
-<a id="find-significant-genes-for-each-comparison" class="anchor" href="#find-significant-genes-for-each-comparison" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Find significant genes for each comparison</h3>
-
-<div class="highlight highlight-source-shell"><pre>usage: sgrsea stattest [-h] -i INFILE -o OUTFILE --multiplier MULTIPLIER
-
-optional arguments:
-  -h, --help            show this <span class="pl-c1">help</span> message and <span class="pl-c1">exit</span>
-  -i INFILE, --input INFILE
-                        sgRSEA input file, 4 columns
-  -o OUTFILE, --output OUTFILE
-                        output file name
-  --multiplier MULTIPLIER
-                        Multiplier to generate background</pre></div>
-
-<h2>
-<a id="examples" class="anchor" href="#examples" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Examples</h2>
 
 <p>Run the suite:</p>
 
 <div class="highlight highlight-source-python"><pre>sgrsea run <span class="pl-k">-</span>d ..<span class="pl-k">/</span>test<span class="pl-k">/</span>fulldata<span class="pl-k">/</span>design.txt <span class="pl-k">-</span>o ..<span class="pl-k">/</span>test<span class="pl-k">/</span>fulldata<span class="pl-k">/</span>testfull <span class="pl-ii">--</span>multiplier <span class="pl-c1">100</span> <span class="pl-k">-</span>t <span class="pl-c1">BR</span>,<span class="pl-c1">DI</span> <span class="pl-k">-</span>c <span class="pl-c1">UN</span>,<span class="pl-c1">UN</span> <span class="pl-ii">--</span>split<span class="pl-k">-</span>lib</pre></div>
 
 <h2>
-<a id="input" class="anchor" href="#input" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Input</h2>
-
-<h3>
-<a id="fastq-file" class="anchor" href="#fastq-file" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><a href="https://en.wikipedia.org/wiki/FASTQ_format">Fastq file</a>
-</h3>
-
-<h3>
-<a id="library-file" class="anchor" href="#library-file" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Library file</h3>
-
-<p>Library file should have 3 columns in the following order, with the column names exactly the same: </p>
-
-<ul>
-<li>Gene </li>
-<li>sgRNA</li>
-<li>Sequence</li>
-</ul>
-
-<p>Example:</p>
-
-<pre><code>Gene  sgRNA             Sequence
-A1BG  HGLibA_00001  GTCGCTGAGCTCCGATTCGA
-A1BG  HGLibA_00002  ACCTGTAGTTGCCGGCGTGC
-A1BG  HGLibA_00003  CGTCAGCGTCACATTGGCCA
-A1CF  HGLibA_00004  CGCGCACTGGTCCAGCGCAC
-A1CF  HGLibA_00005  CCAAGCTATATCCTGTGCGC
-A1CF  HGLibA_00006  AAGTTGCTTGATTGCATTCT
-A2M   HGLibA_00007  CGCTTCTTAAATTCTTGGGT
-A2M   HGLibA_00008  TCACAGCGAAGGCGACACAG
-A2M   HGLibA_00009  CAAACTCCTTCATCCAAGTC
-A2ML1 HGLibA_00010  AAATTTCCCCTCCGTTCAGA
-</code></pre>
-
-<h3>
-<a id="design-file" class="anchor" href="#design-file" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Design file</h3>
-
-<p>When you are using the suite for your experiment, you need to prepare a design file.(For individual functionalities, you may not have to.)
-Design file has to include all the essential columns (Please use exactly the same column names, order does not matter):</p>
-
-<ul>
-<li>
-<strong>filepath</strong>: The absolute path to the fastq file</li>
-<li>
-<strong>lib</strong>: The absolute path of the library file. If there is no sublib, this column should has the same value across all rows</li>
-<li>
-<strong>sublib</strong>: The sample for sublib. Eg: GeCKO_libA, GeCKO_libB. Use this when you sequence sublib separately</li>
-<li>
-<strong>sample</strong>: Name of each sample. Note that don't include sublib information here </li>
-<li>
-<strong>group</strong>: This will be used as output prefix for each sample. Please DON'T use " ", "-" in the content</li>
-<li>
-<strong>sgstart</strong>: The first nucleotide of sgRNA. 1-index</li>
-<li>
-<strong>sgstop</strong>: The last nucleotide of sgRNA. 1-index</li>
-<li>
-<strong>trim3</strong>: Sequence pattern of the 3' adaptor. Usually 5~7nt. If provided, the program will look for perfect match of this pattern in fastq sequence. The last match and all nucleotides after that will be trimmed. If you don't need this, put "NA" in the design file</li>
-</ul>
-
-<p>Example</p>
-
-<pre><code>filepath          sample lib                                 sublib  group     sgstart  sgstop  trim3
-UA1_R1_001.fastq  SS_U1 Human_GeCKOv2_Library_A_3.uniq.txt  LibA    CONTROL   34       53      False
-UB1_R1_001.fastq  SS_U1 Human_GeCKOv2_Library_B_1.uniq.txt  LibB    CONTROL   36       55      False
-HA1_R1_001.fastq  SS_H1 Human_GeCKOv2_Library_A_3.uniq.txt  LibA    TREATMENT 42       61      False
-HB1_R1_001.fastq  SS_H1 Human_GeCKOv2_Library_B_1.uniq.txt  LibB    TREATMENT 35       54      False
-</code></pre>
-
-<p>In the above example, there are 1 treatment and 1 control. Library A and B are sequenced separately. For each sample, sgRNA positions are different. There is not 3 prime adaptor sequence provides so <em>trim3</em> columns are filled with "False".</p>
-
-<h2>
-<a id="output" class="anchor" href="#output" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Output</h2>
-
-<h3>
-<a id="count-matrix-wwo-normalization" class="anchor" href="#count-matrix-wwo-normalization" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Count matrix (w/wo normalization)</h3>
-
-<p>The count matrix will contain basic sgRNA, gene, sequence, sublib information with counts of each sample as an extra column.
-The normalization matrix will contain sgRNA, gene information, along with normalized counts of each sample as an extra column.</p>
-
-<h3>
-<a id="sgrsea-formatted-matrix" class="anchor" href="#sgrsea-formatted-matrix" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>sgRSEA formatted matrix</h3>
-
-<p>This matrix has four columns, sgRNA, Gene, treatment, control.
-If there are multiple comparisons, multiple files will be generated.</p>
-
-<h3>
-<a id="sgrsea-stattest-output-file" class="anchor" href="#sgrsea-stattest-output-file" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>sgRSEA stattest output file</h3>
-
-<p>For each comparison, there will be a result file. Columns are:</p>
-
-<ul>
-<li>Gene: name of the gene</li>
-<li>sgcount: number of sgRNA per gene</li>
-<li>NScore: normalized maxmean score</li>
-<li>pos_p: p value for positive selection</li>
-<li>pos_fdr: FDR for positive selection</li>
-<li>pos_rank: gene rank for positive selection</li>
-<li>neg_p: p value for negative selection</li>
-<li>neg_fdr: FDR for negative selection</li>
-<li>neg_rank: gene rank for negative selection</li>
-</ul>
-
-<h2>
 <a id="license" class="anchor" href="#license" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>License</h2>
 
 <p>See the LICENSE file for license rights and limitations (MIT).</p>
-
-<p><a href="https://cran.r-project.org/web/packages/sgRSEA/index.html">https://cran.r-project.org/web/packages/sgRSEA/index.html</a></p>
 
       <footer class="site-footer">
         <span class="site-footer-owner"><a href="https://github.com/bchen4/sgrsea">sgRSEA</a> is maintained by <a href="https://github.com/bchen4">bchen4</a>.</span>

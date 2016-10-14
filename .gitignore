@@ -1,12 +1,2 @@
-
 # Temp files
 *~
-
-# Byte-compiled files
-*.pyc
-
-# Distribution / packaging
-.eggs/
-build/
-dist/
-*.egg-info/

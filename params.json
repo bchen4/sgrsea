@@ -1,0 +1,6 @@
+{
+  "name": "sgRSEA",
+  "tagline": "Enrichment Analysis of CRISPR/Cas9 Knockout Screen Data",
+  "body": "#sgRSEA: Enrichment Analysis of CRISPR/Cas9 Knockout Screen Data\r\n\r\nsgRSEA is a tool to identify significant genes in GeCKO experiments.\r\n\r\nVersion:alpha\r\n\r\nLast modified: 10/10/2016\r\n\r\nAuthors: Beibei Chen (beibei.chen@utsouthwestern.edu), Jungsik Noh (junsik.noh@utsouthwestern.edu)\r\n\r\nMaintainer: Beibei Chen\r\n\r\n[Download the latest stable version of sgRSEA] (http://)\r\n[Download the R package of sgRSEA] (https://cran.r-project.org/web/packages/sgRSEA/index.html)\r\n\r\nFor detailed [manual](wiki page)\r\n",
+  "note": "Don't delete this file! It's used internally to help with page regeneration."
+}

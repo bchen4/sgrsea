@@ -53,7 +53,7 @@ def main():
       license='MIT',
       package_dir={'sgrsea':'sgrsea'},#,'test':'test'},
       packages=['sgrsea'],
-      scripts=['bin/sgrsea',],
+      scripts=['bin/sgrsea'],
       classifiers=[
         'Development Status :: 1 - Dev',
         'Environment :: Console',

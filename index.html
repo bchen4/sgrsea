@@ -20,18 +20,19 @@
 
     <section class="main-content">
       <h1>
-<a id="sgrsea-enrichment-analysis-of-crisprcas9-knockout-screen-data" class="anchor" href="#sgrsea-enrichment-analysis-of-crisprcas9-knockout-screen-data" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>sgRSEA: Enrichment Analysis of CRISPR/Cas9 Knockout Screen Data</h1>
+<a id="sgrsea" class="anchor" href="#sgrsea" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>sgRSEA</h1>
 
-<p>sgRSEA is a tool to identify significant genes in GeCKO experiments.</p>
+<h3>
+<a id="enrichment-analysis-of-crisprcas9-knockout-screen-data" class="anchor" href="#enrichment-analysis-of-crisprcas9-knockout-screen-data" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Enrichment Analysis of CRISPR/Cas9 Knockout Screen Data</h3>
 
-<p>Version:v0.0.1</p>
+<p><strong>Version</strong> : v0.01</p>
 
-<p>Authors: Beibei Chen (<a href="mailto:beibei.chen@utsouthwestern.edu">beibei.chen@utsouthwestern.edu</a>), Jungsik Noh (<a href="mailto:junsik.noh@utsouthwestern.edu">junsik.noh@utsouthwestern.edu</a>)</p>
+<p><strong>Authors</strong></p>
 
-<p>Maintainer: Beibei Chen</p>
+<p>Beibei Chen (<a href="mailto:beibei.chen@utsouthwestern.edu">beibei.chen@utsouthwestern.edu</a>)
+Jungsik Noh (<a href="mailto:junsik.noh@utsouthwestern.edu">junsik.noh@utsouthwestern.edu</a>)</p>
 
-<p><a href="https://github.com/bchen4/sgrsea">Download the latest stable version of sgRSEA</a>
-<a href="https://cran.r-project.org/web/packages/sgRSEA/index.html">Download the R package of sgRSEA</a></p>
+<p><strong>Maintainer</strong>: Beibei Chen</p>
 
 <p>For detailed <a href="https://github.com/bchen4/sgrsea/wiki/Manual">manual</a></p>
 
@@ -42,7 +43,8 @@
 <li>Python 2.7</li>
 <li><a href="http://pandas.pydata.org/">Pandas</a></li>
 <li><a href="http://www.numpy.org/">Numpy</a></li>
-<li>stattest </li>
+<li>
+<a href="http://statsmodels.sourceforge.net/">statsmodels</a> </li>
 </ul>
 
 <h2>
@@ -69,14 +71,39 @@
 
 <p>sgRSEA can be run on specific steps as well as fastq-to-result using a single command.</p>
 
-<p>Run the suite:</p>
+<div class="highlight highlight-source-python"><pre><span class="pl-c">#Run the suite from fastq to final results</span>
+sgrsea run <span class="pl-k">-</span>d design_file <span class="pl-k">-</span>o my_experiment
 
-<div class="highlight highlight-source-python"><pre>sgrsea run <span class="pl-k">-</span>d ..<span class="pl-k">/</span>test<span class="pl-k">/</span>fulldata<span class="pl-k">/</span>design.txt <span class="pl-k">-</span>o ..<span class="pl-k">/</span>test<span class="pl-k">/</span>fulldata<span class="pl-k">/</span>testfull <span class="pl-ii">--</span>multiplier <span class="pl-c1">100</span> <span class="pl-k">-</span>t <span class="pl-c1">BR</span>,<span class="pl-c1">DI</span> <span class="pl-k">-</span>c <span class="pl-c1">UN</span>,<span class="pl-c1">UN</span> <span class="pl-ii">--</span>split<span class="pl-k">-</span>lib</pre></div>
+<span class="pl-c">#Get the count for single fastq file</span>
+sgrsea count <span class="pl-k">-</span>i my_fastq <span class="pl-k">-</span>o output <span class="pl-k">-</span>l sgRNA_lib 
+
+<span class="pl-c">#Get the count matrix of multiple fastq file and generate a matrix</span>
+sgrsea count <span class="pl-k">-</span>d design.txt <span class="pl-k">-</span>o output_prefix
+
+<span class="pl-c">#Normalize the count matrix</span>
+sgrsea normalization <span class="pl-k">-</span>i count_matrix <span class="pl-ii">--</span>ormalize<span class="pl-k">-</span>method total <span class="pl-k">-</span>o outputfile
+
+<span class="pl-c">#Normalize the count matrix. There are sub-libs sequenced separately</span>
+sgrsea normalization <span class="pl-k">-</span>i count_matrix <span class="pl-ii">--</span>ormalize<span class="pl-k">-</span>method total <span class="pl-k">-</span>o outputfile <span class="pl-ii">--</span>split<span class="pl-k">-</span>lib
+
+<span class="pl-c">#Reformat the matrix into sgRSEA 4-column matrix. </span>
+<span class="pl-c">#-t and -c values MUST match group content of the design file</span>
+sgrsea reformat <span class="pl-k">-</span>i normalized_matrix <span class="pl-k">-</span>d design.txt <span class="pl-k">-</span>t Heat,Cold,Dry <span class="pl-k">-</span>c Ctrl,Ctrl,Ctrl <span class="pl-k">-</span>o output_prefix <span class="pl-ii">--</span>collapse<span class="pl-k">-</span>replicates auto
+
+<span class="pl-c">#Stattest on normalized and formatted matrix</span>
+sgrsea stattest <span class="pl-k">-</span>i matrix <span class="pl-k">-</span>o output
+
+</pre></div>
 
 <h2>
 <a id="license" class="anchor" href="#license" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>License</h2>
 
-<p>See the LICENSE file for license rights and limitations (MIT).</p>
+<p>See the <a href="https://github.com/bchen4/sgrsea/blob/master/LICENSE.txt">LICENSE</a> file for license rights and limitations MIT.</p>
+
+<h2>
+<a id="also-available-in-r" class="anchor" href="#also-available-in-r" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Also available in R</h2>
+
+<p><a href="https://cran.r-project.org/web/packages/sgRSEA/index.html">https://cran.r-project.org/web/packages/sgRSEA/index.html</a></p>
 
       <footer class="site-footer">
         <span class="site-footer-owner"><a href="https://github.com/bchen4/sgrsea">sgRSEA</a> is maintained by <a href="https://github.com/bchen4">bchen4</a>.</span>

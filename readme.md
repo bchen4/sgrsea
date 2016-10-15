@@ -1,18 +1,19 @@
 #sgRSEA
-Enrichment Analysis of CRISPR/Cas9 Knockout Screen Data
+###Enrichment Analysis of CRISPR/Cas9 Knockout Screen Data
 
 
 
-*Version*: v0.01
+**Version** : v0.01
 
-*Authors*
+**Authors**
 
 Beibei Chen (beibei.chen@utsouthwestern.edu)
 Jungsik Noh (junsik.noh@utsouthwestern.edu)
 
-*Maintainer*: Beibei Chen
+**Maintainer**: Beibei Chen
 
 For detailed [manual](https://github.com/bchen4/sgrsea/wiki/Manual)
+
 
 ##Prerequisites
 * Python 2.7

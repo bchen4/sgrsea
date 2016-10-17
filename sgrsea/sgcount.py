@@ -1,7 +1,4 @@
-#!/usr/bin/python
-# programmer : beibei chen
 # usage: count sgRNA from fastq file
-# last modification: 9/13/2016
 
 import sys
 from Bio import SeqIO

@@ -1,6 +1,7 @@
 
 # Temp files
 *~
+.DS_Store
 
 # Byte-compiled files
 *.pyc

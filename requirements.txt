@@ -2,3 +2,5 @@ cython
 pandas >= 0.15.0
 numpy >= 1.7.0
 statsmodels
+biopython
+matplotlib

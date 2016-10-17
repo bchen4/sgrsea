@@ -192,13 +192,19 @@ def standardizeDF(maxmean_df,sFactors):
   
 def pvalue(tn,smm_null):
   '''smm_null is a list'''
-  smm_null = np.asarray(smm_null)
+  #smm_null = np.asarray(smm_null)
   #print type(smm_null)
+  index = numpy.searchsorted(smm_null, tn)
   pos_p = (len(smm_null[smm_null>tn])+1.0)/(1.0+len(smm_null))
   return pos_p
 
 def getPQ(data_maxmean_std,null_maxmean_std):
-  data_maxmean_std['pos_p'] = data_maxmean_std.apply(lambda x: pvalue(x['NScore'],null_maxmean_std),axis=1)
+  null_maxmean_std = np.asarray(null_maxmean_std)
+  null_maxmean_std.sort()
+  #print null_maxmean_std
+  #print np.asarray(data_maxmean_std)
+  #data_maxmean_std['index'] = np.searchsorted(null_maxmean_std, np.asarray(data_maxmean_std['NScore']),side="right")
+  data_maxmean_std['pos_p'] = (1.0+len(null_maxmean_std)-np.searchsorted(null_maxmean_std, data_maxmean_std['NScore'],side="right"))/(1.0+len(null_maxmean_std))
   data_maxmean_std['neg_p'] = 1.0 -data_maxmean_std['pos_p'] 
   data_maxmean_std['pos_fdr'] = multipletests(data_maxmean_std.loc[:,'pos_p'],method='fdr_bh')[1]
   data_maxmean_std['neg_fdr'] = multipletests(data_maxmean_std.loc[:,'neg_p'],method='fdr_bh')[1]

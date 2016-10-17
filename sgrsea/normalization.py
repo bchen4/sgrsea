@@ -6,7 +6,6 @@ import logging
 import numpy as np
 import pandas as pd
 import argparse as ap
-import matplotlib.pyplot as plt
 logging.basicConfig(level=10)
 
 def prepare_argparser():

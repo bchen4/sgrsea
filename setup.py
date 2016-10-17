@@ -70,7 +70,6 @@ def main():
         'pandas >= 0.15.0',
         'statsmodels',
         'biopython',
-        'matplotlib'
         ],
       cmdclass = command_classes,
       )

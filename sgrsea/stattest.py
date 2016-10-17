@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 import argparse as ap
 import datetime
+from scipy import stats
 from statsmodels.stats.multitest import multipletests
 
 logging.basicConfig(format='%(levelname)s:%(message)s',level=logging.DEBUG)
@@ -160,11 +161,18 @@ def maxmeanSampleNull(datafile, multiplier=10, randSeed=None):
       result = (np.apply_along_axis(maxMean,1,zscore_group[i].tolist())).tolist()
       maxmean_dic[k]+=result
   logging.debug("stop maxmean "+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
+  print maxmean_dic[18]
+  st = standarizeMaxmeanDic(maxmean_dic)
+  print st[18]
   return maxmean_dic
   #print maxmean_dic[18]#.flatten()
   #for k,v in maxmean_dic.items():
 #    print k,v[0:10]
 
+def standarizeMaxmeanDic(md):
+  for k in md.keys():
+    md[k] = stats.zscore(md[k])
+  return md
 #DEP#def maxmeanSampleNull(genelist,bgFile,multiplier=10):
 #DEP#  '''Call sampleNull() multiplier times. Only keep maxmean dataframe to save memory.'''
 #DEP#  null_maxmean = pd.DataFrame()

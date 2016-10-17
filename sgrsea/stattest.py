@@ -22,6 +22,7 @@ def prepare_argparser():
   argparser.add_argument("-i","--input",dest = "infile",type=str,required=True, help = "sgRSEA input file, 4 columns")
   argparser.add_argument("-o","--output",dest = "outfile",type=str,required=True, help = "output file name")
   argparser.add_argument("--multiplier",dest = "multiplier",type=int, default = 50, help = "Multiplier to generate background")
+  argparser.add_argument("--random-seed",dest = "randomSeed",type=int, default = None, help = "Random seed to control permuation process")
   #argparser.add_argument("--bgtag",dest = "bgtag",type=str, default = "",help = "Sting to identify control sgRNAs")
   #argparser.add_argument("--bg-row-start",dest = "bgrowstart",type=int,default = -1, help = "Row count of the start of control sgRNA block")
   #argparser.add_argument("--bg-row-stop",dest = "bgrowstop",type=int, default=-1, help = "Row count of the stop of control sgRNA block")
@@ -59,9 +60,6 @@ def addZstat(data_df, pNull):
 def dataFilter(dataFile,sg_min = 1):
   '''Get table of sgRNA number per gene distribution. Filter out the genes with sgRNA number less than sg_min'''
   filter_data = dataFile.groupby('Gene').filter(lambda x : len(x)>=sg_min)
-  #logging.debug(type(filter_data))
-  #logging.debug(filter_data.columns.values)
-  #filter_data['zstat'] = filter_data.loc[:,['treat_1','ctrl_1']].apply(lambda row: zStat(row.to_frame(['treat_1','ctrl_1']),0.4))
   gene_sample = filter_data.loc[:,'Gene']
   return (filter_data,gene_sample)
 
@@ -106,7 +104,6 @@ def getMatrixMaxmean(filtered_zdf):
   '''
   maxmean_df = filtered_zdf.groupby("Gene").agg({'zstat':maxMean,'sgRNA':'count'}).reset_index()
   maxmean_df.columns = ["Gene","maxmean","sgcount"]
-  #logging.debug(maxmean_df.head(10))
   return maxmean_df
 
 
@@ -115,7 +112,6 @@ def splitPoints(census):
   split_at = [0]
   zscore_split_at = [0]
   value_list = []
-  #census = [(2,4),(3,2),(6,1)]
   for value,freq in census:
     zscore_split_at.append(freq+zscore_split_at[-1])
     value_list.append(value)
@@ -127,17 +123,14 @@ def splitPoints(census):
   zscore_split_at.pop(-1)
   return (split_at, zscore_split_at, value_list)
 
-def maxmeanSampleNull(datafile, multiplier=10, randSeed=None):
+def maxmeanSampleNull(datafile, multiplier, randSeed=None):
   #Get the partition of gene list
   zscorelist = np.array(datafile['zstat'])
   genecount = datafile['Gene'].value_counts()
   genebincount = np.bincount(genecount.values)
   genecount_census = zip(np.nonzero(genebincount)[0],genebincount[np.nonzero(genebincount)[0]])
-  #print genecount_census
   (split_at, zscore_split_at, sg_value_list) = splitPoints(genecount_census)
-  #print zscore_split_at
-  np.random.seed(8512)
-  logging.debug("start maxmean "+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
+  np.random.seed(randSeed)
   maxmean_dic = {}
   for loop in range(multiplier):
     split_zscore = np.split(np.random.permutation(zscorelist),split_at)
@@ -152,14 +145,8 @@ def maxmeanSampleNull(datafile, multiplier=10, randSeed=None):
       
       result = (np.apply_along_axis(maxMean,1,zscore_group[i].tolist())).tolist()
       maxmean_dic[k]+=result
-  logging.debug("stop maxmean "+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
   #print maxmean_dic[18]
-  #a,b,st = standarizeMaxmeanDic(maxmean_dic)
-  #print a[18],b,len(st)
   return maxmean_dic
-  #print maxmean_dic[18]#.flatten()
-  #for k,v in maxmean_dic.items():
-#    print k,v[0:10]
 
 def standarizeMaxmeanDic(md):
   sfactor = {}
@@ -170,10 +157,6 @@ def standarizeMaxmeanDic(md):
     snullmaxmean += md[k].tolist()
   return (md,sfactor,snullmaxmean)
 
-
-#DEP#def standardizeFactor(null_maxmean):
-#DEP#  '''Input: null_maxmean_df, Returns a df with 'sgcount', 'mean','std' '''
-#DEP#  group_null_maxmean = null_maxmean.groupby('sgcount')
 
 def standardizeDF(maxmean_df,sFactors):
   #BC#maxmean_df['NScore'] = maxmean_df.apply(lambda x: standardize(x,sFactors),axis=1)
@@ -190,20 +173,10 @@ def standardizeDF(maxmean_df,sFactors):
       dflist.append(group)
   return pd.concat(dflist,axis=0)
   
-def pvalue(tn,smm_null):
-  '''smm_null is a list'''
-  #smm_null = np.asarray(smm_null)
-  #print type(smm_null)
-  index = numpy.searchsorted(smm_null, tn)
-  pos_p = (len(smm_null[smm_null>tn])+1.0)/(1.0+len(smm_null))
-  return pos_p
 
 def getPQ(data_maxmean_std,null_maxmean_std):
   null_maxmean_std = np.asarray(null_maxmean_std)
   null_maxmean_std.sort()
-  #print null_maxmean_std
-  #print np.asarray(data_maxmean_std)
-  #data_maxmean_std['index'] = np.searchsorted(null_maxmean_std, np.asarray(data_maxmean_std['NScore']),side="right")
   data_maxmean_std['pos_p'] = (1.0+len(null_maxmean_std)-np.searchsorted(null_maxmean_std, data_maxmean_std['NScore'],side="right"))/(1.0+len(null_maxmean_std))
   data_maxmean_std['neg_p'] = 1.0 -data_maxmean_std['pos_p'] 
   data_maxmean_std['pos_fdr'] = multipletests(data_maxmean_std.loc[:,'pos_p'],method='fdr_bh')[1]
@@ -214,55 +187,44 @@ def getPQ(data_maxmean_std,null_maxmean_std):
   data_maxmean_std['neg_rank'] = data_maxmean_std.shape[0] - data_maxmean_std['pos_rank']
   return data_maxmean_std
 
-def runStatinfer(infile,outfile,multiplier):
+def runStatinfer(infile,outfile,multiplier,randomseed):
   #if (len(nontag)!=0) or (tagStart>0 and tagStop>0):
   #  (dataFile,bgFile) = getBackground(infile,nontag,tagStart,tagStop)
   #  p0 = pMME(bgFile)
   #else:#Use dataset as background
-  logging.debug("stattest started "+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
+  #logging.debug("stattest started "+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
   dataFile = pd.read_table(infile)
   p0 = pMME(dataFile.iloc[:,2],dataFile.iloc[:,3])
   if p0 ==0 or p0 ==1:
     logging.error("pMME for background equals to 0/1, indicating no counts for treatment or control. Please check your data. Exit.")
     sys.exit(1)
-  #logging.debug(p0) 
   dataFile.columns = ['sgRNA','Gene','treat','ctrl']
   dataFile = addZstat(dataFile,p0)
-  #logging.debug(dataFile.head(10))
-  dataFile.to_csv("test_real_zscore.txt",sep="\t",header=True,index=False)
+  #dataFile.to_csv("test_real_zscore.txt",sep="\t",header=True,index=False)
   (filtered_data,genelist) = dataFilter(dataFile,1)
   #dataStat = treat_group.size()
   logging.info("Calculating treatment maxmean...")
   data_maxmean_df = getMatrixMaxmean(filtered_data)
-  data_maxmean_df.to_csv("test_real_maxmean.txt",sep="\t",header=True,index=False)
+  #data_maxmean_df.to_csv("test_real_maxmean.txt",sep="\t",header=True,index=False)
   logging.info("Sampling null distribution...")
 #BC#  if isinstance(bgFile, pd.DataFrame): 
 #BC#    bgFile = addZstat(bgFile, p0)
 #BC#  else:
 #BC#    bgFile = filtered_data
-  null_maxmean_dic = maxmeanSampleNull(filtered_data,multiplier)
+  null_maxmean_dic = maxmeanSampleNull(filtered_data,multiplier,randomseed)
   #null_maxmean_df.to_csv("null_maxmean_df.xls",sep="\t",index=False)
-  #logging.debug("Get standardize factors")
   (null_s_dic,factor_dic, null_s_array) = standarizeMaxmeanDic(null_maxmean_dic)
-  #logging.debug(factor_df)
-  logging.debug("normalize data started "+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
   data_sdf = standardizeDF(data_maxmean_df,factor_dic)
   #data_sdf.to_csv("test_real_standardize.txt",sep="\t",header=True,index=False)
-  logging.debug("normalize data stopped "+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
   fdf = getPQ(data_sdf,null_s_array)
   fdf = fdf.loc[:,['Gene','sgcount','NScore','pos_p','pos_fdr','neg_p','neg_fdr','pos_rank','neg_rank']]
-  logging.debug("stattest stopped "+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
   
   fdf.to_csv(outfile,sep="\t",index=False)
 
 def main():
   argparser = prepare_argparser()
   args = argparser.parse_args()
-  #infile = pd.read_table(args.infile)
-  #print pMME(infile)
-  #df = maxmeanSampleNull(infile)
-  #df.to_csv(args.outfile,sep="\t",index=False)
-  runStatinfer(args.infile,args.outfile,args.multiplier)
+  runStatinfer(args.infile,args.outfile,args.multiplier, args.randomSeed)
   
 if __name__ == '__main__':
 	main()

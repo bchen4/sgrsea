@@ -33,6 +33,7 @@ def prepare_argparser():
   argparser.add_argument("--t-lable",dest="treatlabel",type=str, help = "label of treatment samples")
   argparser.add_argument("--c-label",dest="ctrllabel",type=str, help="label of control samples")
   argparser.add_argument("--multiplier",dest = "multiplier",type=int, default = 50, help = "Multiplier to generate background")
+  argparser.add_argument("--random-seed",dest = "randomSeed",type=int, default = None, help = "Random seed to control permutation process")
   argparser.add_argument("--collapse-replicates",dest="collapsemethod",type=str, help = "Way to collapse replicates", default="auto", choices=['auto','stack','mean'])
 
   #argparser.add_argument("--bgtag",dest = "bgtag",type=str, default = "",help = "Sting to identify control sgRNAs")
@@ -65,23 +66,19 @@ def run(args):
       workers = []
       for fn in files:
         logging.info("Running test on "+fn)
-        p = Process(target = callstat, args=(work_queue,fn,fn+".sgRSEA.xls",args.multiplier))
+        p = Process(target = callstat, args=(work_queue,fn,fn+".sgRSEA.xls",args.multiplier, args.randomSeed))
         workers.append(p)
         p.start()
       for process in workers:
         process.join()
 
-def callstat(queue, fname, outname, multiplier):
-  queue.put(stattest.runStatinfer(fname,outname,multiplier))
+def callstat(queue, fname, outname, multiplier, randomseed):
+  queue.put(stattest.runStatinfer(fname,outname,multiplier,randomseed))
   
 def main():
   argparser = prepare_argparser()
   args = argparser.parse_args()
   run(args)
-  #normalization(args.infile, args.outfile, args.method, args.splitlib)
-  #infile = pd.read_table(args.infile)
-  #logging.debug("read file")
-  #print norm(infile,"total")
 
 if __name__ == '__main__':
   main()

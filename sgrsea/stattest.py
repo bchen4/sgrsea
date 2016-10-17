@@ -9,6 +9,7 @@ import math
 import numpy as np
 import pandas as pd
 import argparse as ap
+import datetime
 from statsmodels.stats.multitest import multipletests
 
 logging.basicConfig(format='%(levelname)s:%(message)s',level=logging.DEBUG)
@@ -87,8 +88,11 @@ def zStat(sg_row,pNull):
     return zscore
 
 def maxMean(gene_zstat):
-  scores = gene_zstat
-  sc_po = float(sum(scores[scores>=0]))
+  scores = gene_zstat#.tolist()
+  if len(scores)==0:
+    logging.warning("No value for maxmean calculation")
+    return 0
+  sc_po = float(sum(scores[scores>0]))
   sc_ne = float(sum(scores[scores<0]))
   if abs(sc_po) >= abs(sc_ne):
     return sc_po/len(scores)
@@ -113,17 +117,80 @@ def getMatrixMaxmean(filtered_zdf):
 #DEP#  #group_sample = samples.groupby('gene')
 #DEP#  return samples
 
+def splitPoints(census):
+  '''Input a array with tuples (value, freq)'''
+  split_at = [0]
+  zscore_split_at = [0]
+  value_list = []
+  #census = [(2,4),(3,2),(6,1)]
+  for value,freq in census:
+    zscore_split_at.append(freq+zscore_split_at[-1])
+    value_list.append(value)
+    for i in range(freq):
+      split_at.append(split_at[-1]+value)
+  split_at.pop(0)
+  split_at.pop(-1)
+  zscore_split_at.pop(0)
+  zscore_split_at.pop(-1)
+  return (split_at, zscore_split_at, value_list)
+
+def getMatrixMaxmean_null_numpy(datafile, multiplier=10, randSeed=None):
+  #Get the partition of gene list
+  zscorelist = np.array(datafile['zstat'])
+  genecount = datafile['Gene'].value_counts()
+  genebincount = np.bincount(genecount.values)
+  genecount_census = zip(np.nonzero(genebincount)[0],genebincount[np.nonzero(genebincount)[0]])
+  print genecount_census
+  (split_at, zscore_split_at, sg_value_list) = splitPoints(genecount_census)
+  print zscore_split_at
+  np.random.seed(8512)
+  logging.debug("start maxmean "+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
+  maxmean_dic = {}
+  for loop in range(multiplier):
+    split_zscore = np.split(np.random.permutation(zscorelist),split_at)
+    print len(split_zscore)
+    zscore_group = np.split(split_zscore, zscore_split_at)
+    #for m in range(1):
+    #  print m,zscore_group[m]
+    if len(zscore_group)!= len(sg_value_list):
+      logging.error("Zscore group length does not match sgRNA group length. Exit")
+      sys.exit(0)
+    for i in range(len(sg_value_list)):
+      k = sg_value_list[i]
+      if not maxmean_dic.has_key(k):
+        maxmean_dic[k]=[]
+      #print type(zscore_group[i])
+      #print zscore_group[i].tolist()
+      #print np.asarray(zscore_group[i].tolist())
+      
+      result = (np.apply_along_axis(maxMean,1,zscore_group[i].tolist())).tolist()
+      maxmean_dic[k]+=result
+      #except:
+      #  print "cannot maxmean",k
+      #print maxmean_dic[2][0:10]
+  logging.debug("stop maxmean "+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
+#  for k,v in maxmean_dic.items():
+#    print k,v[0:10]
 
 def maxmeanSampleNull(genelist,bgFile,multiplier=10):
   '''Call sampleNull() multiplier times. Only keep maxmean dataframe to save memory.'''
   null_maxmean = pd.DataFrame()
+  logging.debug("start copy df "+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
+  null_df = copy.copy(bgFile)
+  logging.debug("finish copy df "+ datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
   np.random.seed(8512)
+  nulls = []
   for i in range(multiplier):
-    null_df = copy.copy(bgFile)
-    newgene = np.random.permutation(null_df['Gene'])
+    logging.debug("round "+str(i))
+    logging.debug("start permutation:"+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
+    newgene = np.random.permutation(genelist)
     null_df['Gene'] = newgene
+    logging.debug("start calculate maxmean"+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
     newdf = getMatrixMaxmean(null_df)
-    null_maxmean = null_maxmean.append(newdf)
+    nulls.append(newdf)
+  logging.debug("start concat df"+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
+  null_maxmean = pd.concat(nulls)
+  logging.debug("concat finished"+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
   #logging.debug("Null_maxmean_df")
   #logging.debug(null_maxmean[null_maxmean['sgcount'].isin([8,9])])
   return null_maxmean
@@ -213,12 +280,12 @@ def runStatinfer(infile,outfile,multiplier):
 def main():
   argparser = prepare_argparser()
   args = argparser.parse_args()
-  #infile = pd.read_table(args.infile)
+  infile = pd.read_table(args.infile)
   #print pMME(infile)
-  #df = getMatrixMaxmean(infile)
+  df = getMatrixMaxmean_null_numpy(infile)
   #df.to_csv(args.outfile,sep="\t",index=False)
   #runStatinfer(args.infile,args.outfile,args.bgtag, args.bgrowstart, args.bgrowstop, args.multiplier)
-  runStatinfer(args.infile,args.outfile,args.multiplier)
+  #runStatinfer(args.infile,args.outfile,args.multiplier)
   
 if __name__ == '__main__':
 	main()

@@ -109,14 +109,6 @@ def getMatrixMaxmean(filtered_zdf):
   #logging.debug(maxmean_df.head(10))
   return maxmean_df
 
-#DEP#def sampleNull(genelist,bgFile):
-#DEP#  sample_size = len(genelist)
-#DEP#  samples = bgFile.iloc[np.random.randint(0,len(bgFile),size=sample_size)]
-#DEP#  #make samples into gene_matrix structure list
-#DEP#  samples['gene'] = genelist.values
-#DEP#  logging.debug(samples.head(10))
-#DEP#  #group_sample = samples.groupby('gene')
-#DEP#  return samples
 
 def splitPoints(census):
   '''Input a array with tuples (value, freq)'''
@@ -161,9 +153,9 @@ def maxmeanSampleNull(datafile, multiplier=10, randSeed=None):
       result = (np.apply_along_axis(maxMean,1,zscore_group[i].tolist())).tolist()
       maxmean_dic[k]+=result
   logging.debug("stop maxmean "+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
-  print maxmean_dic[18]
-  st = standarizeMaxmeanDic(maxmean_dic)
-  print st[18]
+  #print maxmean_dic[18]
+  #st = standarizeMaxmeanDic(maxmean_dic)
+  #print st[18]
   return maxmean_dic
   #print maxmean_dic[18]#.flatten()
   #for k,v in maxmean_dic.items():
@@ -173,6 +165,7 @@ def standarizeMaxmeanDic(md):
   for k in md.keys():
     md[k] = stats.zscore(md[k])
   return md
+
 #DEP#def maxmeanSampleNull(genelist,bgFile,multiplier=10):
 #DEP#  '''Call sampleNull() multiplier times. Only keep maxmean dataframe to save memory.'''
 #DEP#  null_maxmean = pd.DataFrame()
@@ -250,14 +243,14 @@ def runStatinfer(infile,outfile,multiplier):
 #BC#    bgFile = addZstat(bgFile, p0)
 #BC#  else:
 #BC#    bgFile = filtered_data
-  null_maxmean_df = maxmeanSampleNull(genelist,filtered_data,multiplier)
-  null_maxmean_df.to_csv("null_maxmean_df.xls",sep="\t",index=False)
+  null_maxmean_dic = maxmeanSampleNull(genelist,filtered_data,multiplier)
+  #null_maxmean_df.to_csv("null_maxmean_df.xls",sep="\t",index=False)
   #logging.debug("Get standardize factors")
-  factor_df = standardizeFactor(null_maxmean_df)
+  factor_df = standardizeFactor(null_maxmean_dic)
   #logging.debug(factor_df)
   logging.info("Standardization...")
   data_sdf = standardizeDF(data_maxmean_df,factor_df)
-  null_sdf = standardizeDF(null_maxmean_df,factor_df)
+  null_sdf = standardizeMaxmeanDic(null_maxmean_df,factor_df)
   data_sdf.to_csv("test_real_standardize.txt",sep="\t",header=True,index=False)
   fdf = getPQ(data_sdf,null_sdf)
   fdf = fdf.loc[:,['Gene','sgcount','NScore','pos_p','pos_fdr','neg_p','neg_fdr','pos_rank','neg_rank']]
@@ -270,7 +263,6 @@ def main():
   #print pMME(infile)
   df = maxmeanSampleNull(infile)
   #df.to_csv(args.outfile,sep="\t",index=False)
-  #runStatinfer(args.infile,args.outfile,args.bgtag, args.bgrowstart, args.bgrowstop, args.multiplier)
   #runStatinfer(args.infile,args.outfile,args.multiplier)
   
 if __name__ == '__main__':

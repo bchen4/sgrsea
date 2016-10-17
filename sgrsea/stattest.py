@@ -134,24 +134,21 @@ def splitPoints(census):
   zscore_split_at.pop(-1)
   return (split_at, zscore_split_at, value_list)
 
-def getMatrixMaxmean_null_numpy(datafile, multiplier=10, randSeed=None):
+def maxmeanSampleNull(datafile, multiplier=10, randSeed=None):
   #Get the partition of gene list
   zscorelist = np.array(datafile['zstat'])
   genecount = datafile['Gene'].value_counts()
   genebincount = np.bincount(genecount.values)
   genecount_census = zip(np.nonzero(genebincount)[0],genebincount[np.nonzero(genebincount)[0]])
-  print genecount_census
+  #print genecount_census
   (split_at, zscore_split_at, sg_value_list) = splitPoints(genecount_census)
-  print zscore_split_at
+  #print zscore_split_at
   np.random.seed(8512)
   logging.debug("start maxmean "+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
   maxmean_dic = {}
   for loop in range(multiplier):
     split_zscore = np.split(np.random.permutation(zscorelist),split_at)
-    print len(split_zscore)
     zscore_group = np.split(split_zscore, zscore_split_at)
-    #for m in range(1):
-    #  print m,zscore_group[m]
     if len(zscore_group)!= len(sg_value_list):
       logging.error("Zscore group length does not match sgRNA group length. Exit")
       sys.exit(0)
@@ -159,60 +156,41 @@ def getMatrixMaxmean_null_numpy(datafile, multiplier=10, randSeed=None):
       k = sg_value_list[i]
       if not maxmean_dic.has_key(k):
         maxmean_dic[k]=[]
-      #print type(zscore_group[i])
-      #print zscore_group[i].tolist()
-      #print np.asarray(zscore_group[i].tolist())
       
       result = (np.apply_along_axis(maxMean,1,zscore_group[i].tolist())).tolist()
       maxmean_dic[k]+=result
-      #except:
-      #  print "cannot maxmean",k
-      #print maxmean_dic[2][0:10]
   logging.debug("stop maxmean "+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
-#  for k,v in maxmean_dic.items():
+  return maxmean_dic
+  #print maxmean_dic[18]#.flatten()
+  #for k,v in maxmean_dic.items():
 #    print k,v[0:10]
 
-def maxmeanSampleNull(genelist,bgFile,multiplier=10):
-  '''Call sampleNull() multiplier times. Only keep maxmean dataframe to save memory.'''
-  null_maxmean = pd.DataFrame()
-  logging.debug("start copy df "+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
-  null_df = copy.copy(bgFile)
-  logging.debug("finish copy df "+ datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
-  np.random.seed(8512)
-  nulls = []
-  for i in range(multiplier):
-    logging.debug("round "+str(i))
-    logging.debug("start permutation:"+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
-    newgene = np.random.permutation(genelist)
-    null_df['Gene'] = newgene
-    logging.debug("start calculate maxmean"+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
-    newdf = getMatrixMaxmean(null_df)
-    nulls.append(newdf)
-  logging.debug("start concat df"+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
-  null_maxmean = pd.concat(nulls)
-  logging.debug("concat finished"+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
-  #logging.debug("Null_maxmean_df")
-  #logging.debug(null_maxmean[null_maxmean['sgcount'].isin([8,9])])
-  return null_maxmean
+#DEP#def maxmeanSampleNull(genelist,bgFile,multiplier=10):
+#DEP#  '''Call sampleNull() multiplier times. Only keep maxmean dataframe to save memory.'''
+#DEP#  null_maxmean = pd.DataFrame()
+#DEP#  logging.debug("start copy df "+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
+#DEP#  null_df = copy.copy(bgFile)
+#DEP#  logging.debug("finish copy df "+ datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
+#DEP#  np.random.seed(8512)
+#DEP#  nulls = []
+#DEP#  for i in range(multiplier):
+#DEP#    logging.debug("round "+str(i))
+#DEP#    logging.debug("start permutation:"+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
+#DEP#    newgene = np.random.permutation(genelist)
+#DEP#    null_df['Gene'] = newgene
+#DEP#    logging.debug("start calculate maxmean"+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
+#DEP#    newdf = getMatrixMaxmean(null_df)
+#DEP#    nulls.append(newdf)
+#DEP#  logging.debug("start concat df"+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
+#DEP#  null_maxmean = pd.concat(nulls)
+#DEP#  logging.debug("concat finished"+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
+#DEP#  #logging.debug("Null_maxmean_df")
+#DEP#  #logging.debug(null_maxmean[null_maxmean['sgcount'].isin([8,9])])
+#DEP#  return null_maxmean
 
 def standardizeFactor(null_maxmean):
   '''Input: null_maxmean_df, Returns a df with 'sgcount', 'mean','std' '''
   group_null_maxmean = null_maxmean.groupby('sgcount')
-  factor_df = pd.DataFrame({'mean':group_null_maxmean.maxmean.agg(np.mean),'std':group_null_maxmean.maxmean.agg(np.std)}).reset_index()
-  return factor_df
-  
-#DEP#def standardize(datarow,factors):
-#DEP#  '''Datarow is a pd.Series, index is ['gene','maxmean','sgcount']'''
-#DEP#  factor = factors[factors['sgcount']==datarow.sgcount]
-#DEP#  if factor.shape[0]==1:#Should be only one record
-#DEP#    f_mean = factor.iloc[0]['mean']
-#DEP#    f_std = factor.iloc[0]['std']
-#DEP#  elif factor.shape[0]==0:
-#DEP#    logging.warning("There is no record for genes with "+str(datarow.sgcount)+" sgRNAs. ")
-#DEP#  else:#more than 1 record
-#DEP#    logging.warning("There are more than 1 record for sgRNA count "+str(datarow.sgcount+" group. Check data."))
-#DEP#  smm = (datarow.maxmean-f_mean)*1.0/f_std
-#DEP#  return smm
 
 def standardizeDF(maxmean_df,sFactors):
   #BC#maxmean_df['NScore'] = maxmean_df.apply(lambda x: standardize(x,sFactors),axis=1)
@@ -282,7 +260,7 @@ def main():
   args = argparser.parse_args()
   infile = pd.read_table(args.infile)
   #print pMME(infile)
-  df = getMatrixMaxmean_null_numpy(infile)
+  df = maxmeanSampleNull(infile)
   #df.to_csv(args.outfile,sep="\t",index=False)
   #runStatinfer(args.infile,args.outfile,args.bgtag, args.bgrowstart, args.bgrowstop, args.multiplier)
   #runStatinfer(args.infile,args.outfile,args.multiplier)

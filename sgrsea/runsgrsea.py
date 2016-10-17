@@ -34,6 +34,7 @@ def prepare_argparser():
   argparser.add_argument("--c-label",dest="ctrllabel",type=str, help="label of control samples")
   argparser.add_argument("--multiplier",dest = "multiplier",type=int, default = 50, help = "Multiplier to generate background")
   argparser.add_argument("--collapse-replicates",dest="collapsemethod",type=str, help = "Way to collapse replicates", default="auto", choices=['auto','stack','mean'])
+  argparser.add_argument("--no-count", dest="nocount", default=False, action='store_true', help="Skip counting step. Uses output contents as input")
 
   #argparser.add_argument("--bgtag",dest = "bgtag",type=str, default = "",help = "Sting to identify control sgRNAs")
   #argparser.add_argument("--bg-row-start",dest = "bgrowstart",type=int,default = -1, help = "Row count of the start of control sgRNA block")
@@ -44,7 +45,8 @@ def run(args):
   if isinstance(args.infile, str):
     logging.info("This is one-file mode, only count and do noramlization")
   #logging.info("Start to count fastq")
-  sgcount.run(args)
+  if not args.nocount:
+      sgcount.run(args)
   if os.path.exists(args.outfile+".count.txt"):#count matrix file exsists
     normalization.normalization(args.outfile+".count.txt",args.outfile+".norm.txt",args.method, args.splitlib)
   else:

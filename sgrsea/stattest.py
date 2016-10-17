@@ -154,55 +154,47 @@ def maxmeanSampleNull(datafile, multiplier=10, randSeed=None):
       maxmean_dic[k]+=result
   logging.debug("stop maxmean "+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
   #print maxmean_dic[18]
-  #st = standarizeMaxmeanDic(maxmean_dic)
-  #print st[18]
+  #a,b,st = standarizeMaxmeanDic(maxmean_dic)
+  #print a[18],b,len(st)
   return maxmean_dic
   #print maxmean_dic[18]#.flatten()
   #for k,v in maxmean_dic.items():
 #    print k,v[0:10]
 
 def standarizeMaxmeanDic(md):
+  sfactor = {}
+  snullmaxmean = []
   for k in md.keys():
+    sfactor[k] = (np.mean(md[k]),np.std(md[k]))
     md[k] = stats.zscore(md[k])
-  return md
+    snullmaxmean += md[k].tolist()
+  return (md,sfactor,snullmaxmean)
 
-#DEP#def maxmeanSampleNull(genelist,bgFile,multiplier=10):
-#DEP#  '''Call sampleNull() multiplier times. Only keep maxmean dataframe to save memory.'''
-#DEP#  null_maxmean = pd.DataFrame()
-#DEP#  logging.debug("start copy df "+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
-#DEP#  null_df = copy.copy(bgFile)
-#DEP#  logging.debug("finish copy df "+ datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
-#DEP#  np.random.seed(8512)
-#DEP#  nulls = []
-#DEP#  for i in range(multiplier):
-#DEP#    logging.debug("round "+str(i))
-#DEP#    logging.debug("start permutation:"+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
-#DEP#    newgene = np.random.permutation(genelist)
-#DEP#    null_df['Gene'] = newgene
-#DEP#    logging.debug("start calculate maxmean"+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
-#DEP#    newdf = getMatrixMaxmean(null_df)
-#DEP#    nulls.append(newdf)
-#DEP#  logging.debug("start concat df"+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
-#DEP#  null_maxmean = pd.concat(nulls)
-#DEP#  logging.debug("concat finished"+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
-#DEP#  #logging.debug("Null_maxmean_df")
-#DEP#  #logging.debug(null_maxmean[null_maxmean['sgcount'].isin([8,9])])
-#DEP#  return null_maxmean
 
-def standardizeFactor(null_maxmean):
-  '''Input: null_maxmean_df, Returns a df with 'sgcount', 'mean','std' '''
-  group_null_maxmean = null_maxmean.groupby('sgcount')
+#DEP#def standardizeFactor(null_maxmean):
+#DEP#  '''Input: null_maxmean_df, Returns a df with 'sgcount', 'mean','std' '''
+#DEP#  group_null_maxmean = null_maxmean.groupby('sgcount')
 
 def standardizeDF(maxmean_df,sFactors):
   #BC#maxmean_df['NScore'] = maxmean_df.apply(lambda x: standardize(x,sFactors),axis=1)
-  df = maxmean_df.merge(sFactors,on="sgcount",how="left")
-  df['NScore'] = (df['maxmean']-df['mean'])/df['std']
-  return df
- #BC# return maxmean_df
+  #df = maxmean_df.merge(sFactors,on="sgcount",how="left")
+  #df['NScore'] = (df['maxmean']-df['mean'])/df['std']
+  dflist = []
+  for name,group in maxmean_df.groupby('sgcount'):
+    try:
+      ave,std = sFactors[name]
+    except:
+      logging.warning("No sFactors for genes with "+str(name)+" sgRNAs, Skip.")
+    else:
+      group['NScore'] = (group['maxmean']-ave)/std
+      dflist.append(group)
+  return pd.concat(dflist,axis=0)
   
 def pvalue(tn,smm_null):
-  '''smm_null is a dataframe'''
-  pos_p = (smm_null[smm_null['NScore']>tn].shape[0]+1.0)/(1.0+smm_null.shape[0])
+  '''smm_null is a list'''
+  smm_null = np.asarray(smm_null)
+  #print type(smm_null)
+  pos_p = (len(smm_null[smm_null>tn])+1.0)/(1.0+len(smm_null))
   return pos_p
 
 def getPQ(data_maxmean_std,null_maxmean_std):
@@ -210,8 +202,6 @@ def getPQ(data_maxmean_std,null_maxmean_std):
   data_maxmean_std['neg_p'] = 1.0 -data_maxmean_std['pos_p'] 
   data_maxmean_std['pos_fdr'] = multipletests(data_maxmean_std.loc[:,'pos_p'],method='fdr_bh')[1]
   data_maxmean_std['neg_fdr'] = multipletests(data_maxmean_std.loc[:,'neg_p'],method='fdr_bh')[1]
-  #data_maxmean_std['pos_rank'] = data_maxmean_std['pos_p'].rank().astype(int)
-  #data_maxmean_std['neg_rank'] = data_maxmean_std['neg_p'].rank().astype(int)
   data_maxmean_std = data_maxmean_std.sort_values(by=['pos_fdr','NScore'],ascending=[True,False])
   data_maxmean_std = data_maxmean_std.reset_index(drop=True)
   data_maxmean_std['pos_rank'] = data_maxmean_std.index + 1
@@ -223,6 +213,7 @@ def runStatinfer(infile,outfile,multiplier):
   #  (dataFile,bgFile) = getBackground(infile,nontag,tagStart,tagStop)
   #  p0 = pMME(bgFile)
   #else:#Use dataset as background
+  logging.debug("stattest started "+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
   dataFile = pd.read_table(infile)
   p0 = pMME(dataFile.iloc[:,2],dataFile.iloc[:,3])
   if p0 ==0 or p0 ==1:
@@ -243,27 +234,29 @@ def runStatinfer(infile,outfile,multiplier):
 #BC#    bgFile = addZstat(bgFile, p0)
 #BC#  else:
 #BC#    bgFile = filtered_data
-  null_maxmean_dic = maxmeanSampleNull(genelist,filtered_data,multiplier)
+  null_maxmean_dic = maxmeanSampleNull(filtered_data,multiplier)
   #null_maxmean_df.to_csv("null_maxmean_df.xls",sep="\t",index=False)
   #logging.debug("Get standardize factors")
-  factor_df = standardizeFactor(null_maxmean_dic)
+  (null_s_dic,factor_dic, null_s_array) = standarizeMaxmeanDic(null_maxmean_dic)
   #logging.debug(factor_df)
-  logging.info("Standardization...")
-  data_sdf = standardizeDF(data_maxmean_df,factor_df)
-  null_sdf = standardizeMaxmeanDic(null_maxmean_df,factor_df)
-  data_sdf.to_csv("test_real_standardize.txt",sep="\t",header=True,index=False)
-  fdf = getPQ(data_sdf,null_sdf)
+  logging.debug("normalize data started "+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
+  data_sdf = standardizeDF(data_maxmean_df,factor_dic)
+  #data_sdf.to_csv("test_real_standardize.txt",sep="\t",header=True,index=False)
+  logging.debug("normalize data stopped "+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
+  fdf = getPQ(data_sdf,null_s_array)
   fdf = fdf.loc[:,['Gene','sgcount','NScore','pos_p','pos_fdr','neg_p','neg_fdr','pos_rank','neg_rank']]
+  logging.debug("stattest stopped "+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
+  
   fdf.to_csv(outfile,sep="\t",index=False)
 
 def main():
   argparser = prepare_argparser()
   args = argparser.parse_args()
-  infile = pd.read_table(args.infile)
+  #infile = pd.read_table(args.infile)
   #print pMME(infile)
-  df = maxmeanSampleNull(infile)
+  #df = maxmeanSampleNull(infile)
   #df.to_csv(args.outfile,sep="\t",index=False)
-  #runStatinfer(args.infile,args.outfile,args.multiplier)
+  runStatinfer(args.infile,args.outfile,args.multiplier)
   
 if __name__ == '__main__':
 	main()

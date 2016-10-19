@@ -48,7 +48,7 @@ def add_run_parser(subparsers):
   subc_run.add_argument("--multiplier",dest = "multiplier",type=int, default = 50, help = "Multiplier to generate background")
   subc_run.add_argument("--random-seed",dest = "randomSeed",type=int, default = None, help = "Random seed to control permuation process")
   subc_run.add_argument("--collapse-replicates",dest="collapsemethod",type=str, help = "Way to collapse replicates", default="auto", choices=['auto','stack','mean'])
-
+  subc_run.add_argument("--no-count", dest="nocount", default=False, action='store_true', help="Skip counting step. Uses output contents as input")
   #subc_run.add_argument("--bgtag",dest = "bgtag",type=str, default = "",help = "Sting to identify control sgRNAs")
   #subc_run.add_argument("--bg-row-start",dest = "bgrowstart",type=int,default = -1, help = "Row count of the start of control sgRNA block")
   #subc_run.add_argument("--bg-row-stop",dest = "bgrowstop",type=int, default=-1, help = "Row count of the stop of control sgRNA block")

@@ -44,8 +44,8 @@ def prepare_argparser():
 #DEP#    bgFile = copy.copy(infile)
 #DEP#    dataFile = infile
 #DEP#
-#DEP#  logging.debug("bgFile: "+str(bgFile.shape[0]))
-#DEP#  logging.debug("dataFile: "+str(dataFile.shape[0]))
+#DEP#  #logging.debug("bgFile: "+str(bgFile.shape[0]))
+#DEP#  #logging.debug("dataFile: "+str(dataFile.shape[0]))
 #DEP#  if bgFile.shape[0]==0: #backgound file is empty
 #DEP#    logging.info("There is no NonTargeting sgRNA found. Use input data as background.")
 #DEP#    bgFile = copy.copy(infile)
@@ -192,7 +192,7 @@ def runStatinfer(infile,outfile,multiplier,randomseed):
   #  (dataFile,bgFile) = getBackground(infile,nontag,tagStart,tagStop)
   #  p0 = pMME(bgFile)
   #else:#Use dataset as background
-  #logging.debug("stattest started "+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
+  ##logging.debug("stattest started "+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
   dataFile = pd.read_table(infile)
   p0 = pMME(dataFile.iloc[:,2],dataFile.iloc[:,3])
   if p0 ==0 or p0 ==1:

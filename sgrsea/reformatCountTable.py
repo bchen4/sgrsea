@@ -64,14 +64,14 @@ def mapcolindex(header,samples):
   return col
 
 def stackReplicates(cfile,treatcols,ctrlcols):
-  #logging.debug(treatcols)
-  #logging.debug(ctrlcols)
+  ##logging.debug(treatcols)
+  ##logging.debug(ctrlcols)
   nfile = cfile._get_numeric_data()
   df = cfile.loc[:,['sgRNA','Gene']].join(nfile.iloc[:,[treatcols[0],ctrlcols[0]]])
   df.columns = ['sgRNA','Gene','treatment','control']
   for tc, cc in zip(treatcols[1:],ctrlcols[1:]):
-    #logging.debug(tc)
-    #logging.debug(cc)
+    ##logging.debug(tc)
+    ##logging.debug(cc)
     newdf = cfile.loc[:,['sgRNA','Gene']].join(nfile.iloc[:,[tc,cc]])
     newdf.columns = df.columns
     df = df.append(newdf)

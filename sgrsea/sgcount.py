@@ -40,7 +40,7 @@ def runsgcount(args):
     #infile = open(args.infile,"r")
     lib = makelib([args.libfile],['sublib'])
     result = {}
-    ##logging.debug("There are "+str(lib.shape[0])+" sgRNAs in the library")
+    ###logging.debug("There are "+str(lib.shape[0])+" sgRNAs in the library")
     total_fq_count = {}
     (result_addr,total_count,sublib) = sgcount(args.infile, args.sgstart, args.sgstop, args.trim3,"count","sublib")
     result[sublib] = pd.read_table(result_addr+".tmpcount")

@@ -44,10 +44,10 @@ def norm(infile,method):
 def normalization(infile, outfile, method, splitlib):
   if splitlib: #normalize sub lib separately
     myfile = pd.read_table(infile)
-    logging.debug(myfile._get_numeric_data().columns)
+    #logging.debug(myfile._get_numeric_data().columns)
     norm_df = pd.DataFrame(columns = ['sgRNA','Gene']+myfile._get_numeric_data().columns.tolist())
     for sublib, group in myfile.groupby('sublib'):
-      logging.debug(sublib)
+      #logging.debug(sublib)
       norm_df = norm_df.append(norm(group, method))
   else:
     norm_df = norm(pd.read_table(infile),method)
@@ -61,7 +61,7 @@ def main():
   args = argparser.parse_args()
   normalization(args.infile, args.outfile, args.method, args.splitlib)
   #infile = pd.read_table(args.infile)
-  #logging.debug("read file")
+  ##logging.debug("read file")
   #print norm(infile,"total")
 
 if __name__ == '__main__':

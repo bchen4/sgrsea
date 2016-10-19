@@ -14,7 +14,7 @@ def prepare_argparser():
   description = "sgRSEA: identify significant genes in CRISPR-Cas9 experiment"
   epilog = "For command line options of each command, type %(prog)s COMMAND -h"
   argparser = argparse.ArgumentParser(description=description, epilog = epilog)
-  argparser.add_argument("--version", action="version", version="%(prog)s"+sgrsea_VERSION)
+  argparser.add_argument("--version", action="version", version="%(prog)s "+sgrsea_VERSION)
   subparsers = argparser.add_subparsers( dest = 'subcommand_name' )
   
   #command for run the whole suite
@@ -105,7 +105,6 @@ def add_stattest_parser(subparsers):
 
 
 def main():
-  logging.debug("main")
   arg_parser = prepare_argparser()
   args = arg_parser.parse_args()
   subcommand  = args.subcommand_name

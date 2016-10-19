@@ -1,5 +1,5 @@
 # programmer : bbc
-# usage:
+# usage:statistical test on normalizd sg count table
 
 import sys
 import random

@@ -3,7 +3,7 @@
 
 
 
-**Version** : v0.01
+**Version** : v0.02
 
 **Authors**
 
@@ -20,6 +20,8 @@ For detailed [manual](https://github.com/bchen4/sgrsea/wiki/Manual)
 * [Pandas](http://pandas.pydata.org/)
 * [Numpy](http://www.numpy.org/)
 * [statsmodels](http://statsmodels.sourceforge.net/) 
+* [scipy](https://www.scipy.org/)
+* [biopython](http://biopython.org/)
 
 ##Installation 
 

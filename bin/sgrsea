@@ -8,7 +8,7 @@ import sgrsea
 
 logging.basicConfig(format='%(levelname)s:%(message)s',level=logging.DEBUG)
 
-sgrsea_VERSION = "v0.0.1"
+sgrsea_VERSION = "v0.0.2"
 
 def prepare_argparser():
   description = "sgRSEA: identify significant genes in CRISPR-Cas9 experiment"

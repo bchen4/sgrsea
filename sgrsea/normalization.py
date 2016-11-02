@@ -29,7 +29,7 @@ def norm(infile,method):
   info = infile.loc[:,['sgRNA','Gene']]
   num = infile._get_numeric_data()
   num[num < 0] = 0
-  if method == "upperquartile":
+  if method == "upperquantile":
     norm_factor = num.apply(percentile(75),axis=0).astype(float)
     smooth_factor = float(norm_factor.mean())  
   if method == "median":

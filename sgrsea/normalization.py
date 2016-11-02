@@ -13,7 +13,7 @@ def prepare_argparser():
   epilog = "For command line options of each command, type %(prog)% COMMAND -h"
   argparser = ap.ArgumentParser(description=description, epilog = epilog)
   argparser.add_argument("-i","--input",dest = "infile",type=str, required=True, help="input count file matrix")
-  argparser.add_argument("--normalize-method",dest="method", default="total", type=str,help ="design file", choices=['total','median','upperquantile'])
+  argparser.add_argument("--normalize-method",dest="method", default="total", type=str,help ="normalization method", choices=['cpm','total','median','upperquantile'])
   argparser.add_argument("-o","--output",dest = "outfile",type=str,required=True, help="output")
   argparser.add_argument("--split-lib",dest = "splitlib",action='store_true', help="Lib A and B are sequenced separately")
   return argparser
@@ -35,9 +35,14 @@ def norm(infile,method):
   if method == "median":
     norm_factor = num.apply(percentile(50),axis=0).astype(float)
     smooth_factor = float(norm_factor.mean())  
-  elif method == "total":
+  elif method in ["cpm","total"]:
     norm_factor = num.apply(np.sum,axis=0).astype(float)
-    smooth_factor = 10**6 * 1.0
+    if method == "cpm":
+      smooth_factor = 10**6 * 1.0
+    elif method == "total":
+      smooth_factor = float(norm_factor.mean())  
+  logging.debug(norm_factor)
+  logging.debug(smooth_factor)
   num_norm = num.div(norm_factor/float(smooth_factor),axis="columns")
   num_norm = num_norm.applymap(lambda x: x+1)
   #num_norm = num_norm.applymap(around)

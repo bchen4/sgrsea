@@ -31,18 +31,16 @@ def norm(infile,method):
   num[num < 0] = 0
   if method == "upperquantile":
     norm_factor = num.apply(percentile(75),axis=0).astype(float)
-    smooth_factor = float(norm_factor.mean())  
   if method == "median":
     norm_factor = num.apply(percentile(50),axis=0).astype(float)
-    smooth_factor = float(norm_factor.mean())  
   elif method in ["cpm","total"]:
     norm_factor = num.apply(np.sum,axis=0).astype(float)
-    if method == "cpm":
-      smooth_factor = 10**6 * 1.0
-    elif method == "total":
-      smooth_factor = float(norm_factor.mean())  
-  logging.debug(norm_factor)
-  logging.debug(smooth_factor)
+  if method == "cpm":
+    smooth_factor = 10**6 * 1.0
+  else:
+    smooth_factor = float(norm_factor.mean())  
+  #logging.debug(norm_factor)
+  #logging.debug(smooth_factor)
   num_norm = num.div(norm_factor/float(smooth_factor),axis="columns")
   num_norm = num_norm.applymap(lambda x: x+1)
   #num_norm = num_norm.applymap(around)

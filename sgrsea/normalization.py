@@ -32,6 +32,9 @@ def norm(infile,method):
   if method == "upperquartile":
     norm_factor = num.apply(percentile(75),axis=0).astype(float)
     smooth_factor = float(norm_factor.mean())  
+  if method == "median":
+    norm_factor = num.apply(percentile(50),axis=0).astype(float)
+    smooth_factor = float(norm_factor.mean())  
   elif method == "total":
     norm_factor = num.apply(np.sum,axis=0).astype(float)
     smooth_factor = 10**6 * 1.0

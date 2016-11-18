@@ -1,0 +1,9 @@
+filepath	sample	sublib	group	sgstart	sgstop	trim3	lib
+Ctrl_rep1_A.fastq	Ctrl_rep1	A	Ctrl	25	44	FALSE	Mouse_GeCKOv2_Library_A_3.uniq.txt
+Ctrl_rep2_A.fastq	Ctrl_rep2	A	Ctrl	26	45	FALSE	Mouse_GeCKOv2_Library_A_3.uniq.txt
+Ctrl_rep1_B.fastq	Ctrl_rep1	B	Ctrl	27	46	FALSE	Mouse_GeCKOv2_Library_B_1.uniq.txt
+Ctrl_rep2_B.fastq	Ctrl_rep2	B	Ctrl	28	47	FALSE	Mouse_GeCKOv2_Library_B_1.uniq.txt
+Treat_rep1_A.fastq	Treat_rep1	A	Treat	29	48	FALSE	Mouse_GeCKOv2_Library_A_3.uniq.txt
+Treat_rep2_A.fastq	Treat_rep2	A	Treat	30	49	FALSE	Mouse_GeCKOv2_Library_A_3.uniq.txt
+Treat_rep1_B.fastq	Treat_rep1	B	Treat	31	50	FALSE	Mouse_GeCKOv2_Library_B_1.uniq.txt
+Treat_rep2_B.fastq	Treat_rep2	B	Treat	32	51	FALSE	Mouse_GeCKOv2_Library_B_1.uniq.txt

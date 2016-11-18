@@ -100,7 +100,7 @@ def multicount(dfile):
     workers.append(p)
     p.start()
   
-  logging.info("Start join process")
+  #logging.info("Start join process")
   for process in workers:
     process.join()
   

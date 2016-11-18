@@ -187,7 +187,7 @@ def getPQ(data_maxmean_std,null_maxmean_std):
   data_maxmean_std['neg_rank'] = data_maxmean_std.shape[0] - data_maxmean_std['pos_rank']
   return data_maxmean_std
 
-def runStatinfer(infile,outfile,multiplier,randomseed):
+def run(infile,outfile,multiplier,randomseed):
   #if (len(nontag)!=0) or (tagStart>0 and tagStop>0):
   #  (dataFile,bgFile) = getBackground(infile,nontag,tagStart,tagStop)
   #  p0 = pMME(bgFile)
@@ -224,7 +224,7 @@ def runStatinfer(infile,outfile,multiplier,randomseed):
 def main():
   argparser = prepare_argparser()
   args = argparser.parse_args()
-  runStatinfer(args.infile,args.outfile,args.multiplier, args.randomSeed)
+  run(args.infile,args.outfile,args.multiplier, args.randomSeed)
   
 if __name__ == '__main__':
 	main()

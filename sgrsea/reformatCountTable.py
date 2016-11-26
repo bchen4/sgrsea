@@ -90,6 +90,10 @@ def reformat(cfile, treatcols, ctrlcols, method):
       df = averageReplicates(cfile, treatcols, ctrlcols)
     else:#combine
       df = stackReplicates(cfile,treatcols, ctrlcols)
+  elif method == "stack":
+    df = stackReplicates(cfile,treatcols, ctrlcols)
+  elif method == "mean":
+    df = averageReplicates(cfile, treatcols, ctrlcols)
   return df
 
 def run():

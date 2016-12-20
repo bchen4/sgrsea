@@ -203,7 +203,7 @@ def runStatinfer(infile,outfile,multiplier,randomseed):
     sys.exit(1)
   dataFile.columns = ['sgRNA','Gene','treat','ctrl']
   dataFile = addZstat(dataFile,p0)
-  #dataFile.to_csv("test_real_zscore.txt",sep="\t",header=True,index=False)
+  dataFile.to_csv(outfile+"_sg_zscore.txt",sep="\t",header=True,index=False)
   (filtered_data,genelist) = dataFilter(dataFile,1)
   #dataStat = treat_group.size()
   logging.info("Calculating treatment maxmean...")

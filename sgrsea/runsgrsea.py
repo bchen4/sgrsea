@@ -26,7 +26,7 @@ def prepare_argparser():
   argparser.add_argument("--sgstart",dest="sgstart",type=int, default=-1,help = "The first nucleotide sgRNA starts. 1-index")
   argparser.add_argument("--sgstop",dest="sgstop",type=int, default=-1,help = "The last nucleotide sgRNA starts. 1-index")
   argparser.add_argument("--trim3",dest="trim3",type=str,help = "The trimming pattern from 3'. This pattern and the following sequence will be removed")
-  argparser.add_argument("--num-threads",dest="threads",type=int,help = "Number of threads to use.")
+  argparser.add_argument("--num-threads",dest="threads",type=int,default = 1,help = "Number of threads to use.")
   argparser.add_argument("--normalize_method",dest="method", default="total", type=str,help ="design file", choices=['total','median','upperquantile'])
   argparser.add_argument("--split-lib",dest = "splitlib",action='store_true', help="Lib A and B are sequenced separately")
   argparser.add_argument("-t","--treatment",dest="treat",type=str,required=True, help = "columns/name of treatment samples")

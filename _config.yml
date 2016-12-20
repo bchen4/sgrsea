@@ -1,0 +1,8 @@
+title: sgRSEA
+description: Enrichment Analysis of Genome-wide CRISPR/Cas9 Screen Data
+google_analytics: 
+show_downloads: true
+theme: jekyll-theme-cayman
+
+gems:
+  - jekyll-mentions

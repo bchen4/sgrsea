@@ -23,6 +23,7 @@ def prepare_argparser():
   argparser.add_argument("--sgstart",dest="sgstart",type=int, default=-1,help = "The first nucleotide sgRNA starts. 1-index")
   argparser.add_argument("--sgstop",dest="sgstop",type=int, default=-1,help = "The last nucleotide sgRNA starts. 1-index")
   argparser.add_argument("--trim3",dest="trim3",type=str,help = "The trimming pattern from 3'. This pattern and the following sequence will be removed")
+  argparser.add_argument("--num-threads",dest="threads",type=int,help = "Number of threads to use.")
   return(argparser)
 
 def runsgcount(args):
@@ -35,8 +36,14 @@ def runsgcount(args):
     libinfo = dfile.loc[:,['lib','sublib']].drop_duplicates()
     lib = makelib(libinfo['lib'].tolist(),libinfo['sublib'].tolist())
     lib_df = pd.DataFrame()
-    (result, total_fq_count) = multicount_limit(dfile)
+    (result, total_fq_count) = multicount(dfile,args.threads)
     (result_df, summary_df) = generatefinaltable(result, total_fq_count, lib, dfile)
+    for fn in dfile['filepath']:
+      try:
+        os.remove(fn+'.tmpcount')
+      except:
+        logging.warning("Cannot delete "+fn+".tmpcount")
+    
   elif args.infile:
     #infile = open(args.infile,"r")
     lib = makelib([args.libfile],['sublib'])
@@ -91,20 +98,20 @@ def multicount(dfile, number_of_workers=5):
   Parse design file, and call sgcount for each pair of files. 
   Combine all results to a Pandas dataframe and return,group by sublib
   '''
-  work_num = number_of_workers
+  work_num = min(dfile.shape[0],number_of_workers)
   work_pool = Pool(work_num)
   workers = []
   #make a list of arguments, each row/item is a call
   arglist = zip(dfile['filepath'].tolist(),dfile['sgstart'].tolist(),
       dfile['sgstop'].tolist(), dfile['trim3'].tolist(), 
       dfile['sample'].tolist(), dfile['sublib'].tolist())
-  results = work_pool.map(sgcountwrapper, arglist)  
-  #print results 
+  resultList = work_pool.map(sgcountwrapper, arglist)  
+  work_pool.close()
+  work_pool.join()
   #get results
-  #logging.info("Retrive results")
   total_fq_count = {}
   samplefile = {}
-  for info in results:
+  for info in resultList:
     (fqfilename,total_count,fsublib) = info#output should be a Pandas df
     total_fq_count[fqfilename] = total_count
     if not samplefile.has_key(fsublib):
@@ -113,17 +120,10 @@ def multicount(dfile, number_of_workers=5):
   result_dic ={}
   for sublibname, files in samplefile.items():
     result = pd.read_table(files[0]+".tmpcount")
-    try:
-      os.remove(files[0]+".tmpcount")
-    except:
-      logging.warning("Cannot delete "+files[0]+".tmpcount")
     for fn in files[1:]:
       result = result.merge(pd.read_table(fn+".tmpcount"),on="Sequence",how="outer")
-      try:
-        os.remove(fn+".tmpcount")
-      except:
-        logging.warning("Cannot delete "+fqfilename+".tmpcount")
     result_dic[sublibname] = result
+
   return (result_dic, total_fq_count)
 
 def makelib(libs, sublib):

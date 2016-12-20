@@ -7,6 +7,7 @@ import logging
 import pandas as pd
 import numpy as np
 from multiprocessing import Process, Queue
+from multiprocessing import Pool
 logging.basicConfig(level=10)
 
 
@@ -34,7 +35,7 @@ def runsgcount(args):
     libinfo = dfile.loc[:,['lib','sublib']].drop_duplicates()
     lib = makelib(libinfo['lib'].tolist(),libinfo['sublib'].tolist())
     lib_df = pd.DataFrame()
-    (result, total_fq_count) = multicount(dfile)
+    (result, total_fq_count) = multicount_limit(dfile)
     (result_df, summary_df) = generatefinaltable(result, total_fq_count, lib, dfile)
   elif args.infile:
     #infile = open(args.infile,"r")
@@ -81,35 +82,30 @@ def generatefinaltable(resultdic, totaldic, lib, dfile):
   summary_df = summary_df.loc[:,['filepath','sample','sublib','total_reads','mapped_reads','mapping_ratio']]
   return (count_df, summary_df)
 
-def callsgcount(queue,fname,sgstart,sgstop,trim3,sample,sublib):
-  queue.put(sgcount(fname,sgstart,sgstop,trim3,sample,sublib))
+def sgcountwrapper(args):
+  #return fq file name, total count and sublit
+  return sgcount(*args)
 
-def multicount(dfile):
+def multicount(dfile, number_of_workers=5):
   '''
   Parse design file, and call sgcount for each pair of files. 
   Combine all results to a Pandas dataframe and return,group by sublib
   '''
-  work_num = dfile.shape[0]
-  work_queue = Queue()
+  work_num = number_of_workers
+  work_pool = Pool(work_num)
   workers = []
-
-  for index in range(work_num):
-    record = dfile.iloc[index,:]
-    p = Process(target=callsgcount, args=(work_queue,record['filepath'],
-      record['sgstart'],record['sgstop'],record['trim3'],record['sample'],record['sublib']))
-    workers.append(p)
-    p.start()
-  
-  #logging.info("Start join process")
-  for process in workers:
-    process.join()
-  
+  #make a list of arguments, each row/item is a call
+  arglist = zip(dfile['filepath'].tolist(),dfile['sgstart'].tolist(),
+      dfile['sgstop'].tolist(), dfile['trim3'].tolist(), 
+      dfile['sample'].tolist(), dfile['sublib'].tolist())
+  results = work_pool.map(sgcountwrapper, arglist)  
+  #print results 
   #get results
   #logging.info("Retrive results")
   total_fq_count = {}
   samplefile = {}
-  for i in range(work_num):
-    (fqfilename,total_count,fsublib) = work_queue.get()#output should be a Pandas df
+  for info in results:
+    (fqfilename,total_count,fsublib) = info#output should be a Pandas df
     total_fq_count[fqfilename] = total_count
     if not samplefile.has_key(fsublib):
       samplefile[fsublib] = []
@@ -129,7 +125,6 @@ def multicount(dfile):
         logging.warning("Cannot delete "+fqfilename+".tmpcount")
     result_dic[sublibname] = result
   return (result_dic, total_fq_count)
-
 
 def makelib(libs, sublib):
   '''
@@ -175,7 +170,7 @@ def sgcount(fqfile,sgstart, sgstop, trim3, sample="count",sublib="sublib"):
     total_count += 1
     if total_count % 500000 ==0:
       logging.info("Processed "+fqfile+" "+str(total_count)+" reads...")
-      #break
+      break
     sequence =  trimseq(str(record.seq),sgstart, sgstop, trim3)
     print >> trim_out, ">"+record.id+"\n"+sequence
     if not seqdic.has_key(sequence):

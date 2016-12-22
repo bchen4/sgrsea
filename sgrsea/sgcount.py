@@ -153,7 +153,7 @@ def trimseq(seq,start,stop,trim3=None):
   if trim3:#find the pattern from tail and trim off the rest of seq
     trim_index = seq.rfind(trim3)
     if trim_index >0:
-      new_stop = min(new_stop, trim_index+1)
+      new_stop = min(new_stop, trim_index)
   trim_seq = seq[new_start:new_stop]
   return trim_seq
 

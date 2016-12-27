@@ -123,7 +123,6 @@ def multicount(dfile, number_of_workers=5):
     for fn in files[1:]:
       result = result.merge(pd.read_table(fn+".tmpcount"),on="Sequence",how="outer")
     result_dic[sublibname] = result
-
   return (result_dic, total_fq_count)
 
 def makelib(libs, sublib):
@@ -170,7 +169,7 @@ def sgcount(fqfile,sgstart, sgstop, trim3, sample="count",sublib="sublib"):
     total_count += 1
     if total_count % 500000 ==0:
       logging.info("Processed "+fqfile+" "+str(total_count)+" reads...")
-      #break
+      break
     sequence =  trimseq(str(record.seq),sgstart, sgstop, trim3)
     print >> trim_out, ">"+record.id+"\n"+sequence
     if not seqdic.has_key(sequence):

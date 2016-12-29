@@ -100,7 +100,7 @@ def multicount(dfile, number_of_workers=5):
   '''
   work_num = min(dfile.shape[0],number_of_workers)
   work_pool = Pool(work_num)
-  workers = []
+  #workers = []
   #make a list of arguments, each row/item is a call
   arglist = zip(dfile['filepath'].tolist(),dfile['sgstart'].tolist(),
       dfile['sgstop'].tolist(), dfile['trim3'].tolist(), 

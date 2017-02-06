@@ -8,7 +8,7 @@ import sgrsea
 
 logging.basicConfig(format='%(levelname)s:%(message)s',level=logging.DEBUG)
 
-sgrsea_VERSION = "v0.0.5"
+sgrsea_VERSION = "v0.0.6"
 
 def prepare_argparser():
   description = "sgRSEA: identify significant genes in CRISPR-Cas9 experiment"
@@ -42,6 +42,7 @@ def add_run_parser(subparsers):
   subc_run.add_argument("--sgstop",dest="sgstop",type=int, default=-1,help = "The last nucleotide sgRNA starts. 1-index")
   subc_run.add_argument("--trim3",dest="trim3",type=str,help = "The trimming pattern from 3'. This pattern and the following sequence will be removed")
   subc_run.add_argument("--num-threads",dest="threads",type=int,default=1,help = "Number of threads to use.")
+  subc_run.add_argument("--file-type",dest="filetype",type=str,default="fqgz",help = "Type of the input file. Can be fq, fa, fqgz. Default is fqgz", choices=['fq','fa','fqgz'])
   subc_run.add_argument("--normalize-method",dest="method", default="total", type=str,help ="design file", choices=['cpm','total','median','upperquantile'])
   subc_run.add_argument("--split-lib",dest = "splitlib",action='store_true', help="Lib A and B are sequenced separately")
   subc_run.add_argument("-t","--treatment",dest="treat",type=str,required=True, help = "columns/name of treatment samples")
@@ -68,6 +69,7 @@ def add_count_parser(subparsers):
   subc_count.add_argument("--sgstop",dest="sgstop",type=int, default=-1,help = "The last nucleotide sgRNA starts. 1-index")
   subc_count.add_argument("--trim3",dest="trim3",type=str,help = "The trimming pattern from 3'. This pattern and the following sequence will be removed")
   subc_count.add_argument("--num-threads",dest="threads",type=int, default=1,help = "Number of threads to use.")
+  subc_count.add_argument("--file-type",dest="filetype",type=str,default="fqgz",help = "Type of the input file. Can be fq, fa, fqgz. Default is fqgz", choices=['fq','fa','fqgz'])
   return
 
 def add_normalization_parser(subparsers):

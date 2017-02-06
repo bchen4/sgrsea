@@ -6,6 +6,7 @@ import argparse as ap
 import logging
 import pandas as pd
 import numpy as np
+import gzip
 from multiprocessing import Process, Queue
 from multiprocessing import Pool
 logging.basicConfig(level=10)
@@ -24,6 +25,7 @@ def prepare_argparser():
   argparser.add_argument("--sgstop",dest="sgstop",type=int, default=-1,help = "The last nucleotide sgRNA starts. 1-index")
   argparser.add_argument("--trim3",dest="trim3",type=str,help = "The trimming pattern from 3'. This pattern and the following sequence will be removed")
   argparser.add_argument("--num-threads",dest="threads",type=int,default=1,help = "Number of threads to use.")
+  argparser.add_argument("--file-type",dest="filetype",type=str,default="fqgz",help = "Type of the input file. Can be fq, fa, fqgz. Default is fqgz", choices=['fq','fa','fqgz'])
   return(argparser)
 
 def runsgcount(args):
@@ -36,7 +38,7 @@ def runsgcount(args):
     libinfo = dfile.loc[:,['lib','sublib']].drop_duplicates()
     lib = makelib(libinfo['lib'].tolist(),libinfo['sublib'].tolist())
     lib_df = pd.DataFrame()
-    (result, total_fq_count) = multicount(dfile,args.threads)
+    (result, total_fq_count) = multicount(dfile,args.threads,args.filetype)
     (result_df, summary_df) = generatefinaltable(result, total_fq_count, lib, dfile)
     for fn in dfile['filepath']:
       try:
@@ -50,7 +52,7 @@ def runsgcount(args):
     result = {}
     ###logging.debug("There are "+str(lib.shape[0])+" sgRNAs in the library")
     total_fq_count = {}
-    (result_addr,total_count,sublib) = sgcount(args.infile, args.sgstart, args.sgstop, args.trim3,"count","sublib")
+    (result_addr,total_count,sublib) = sgcount(args.infile, args.sgstart, args.sgstop, args.trim3,"count","sublib",args.filetype)
     result[sublib] = pd.read_table(result_addr+".tmpcount")
     total_fq_count[result_addr] = total_count
   #Get total reads count df
@@ -93,7 +95,7 @@ def sgcountwrapper(args):
   #return fq file name, total count and sublit
   return sgcount(*args)
 
-def multicount(dfile, number_of_workers=5):
+def multicount(dfile, number_of_workers=5, filetype="fqgz"):
   '''
   Parse design file, and call sgcount for each pair of files. 
   Combine all results to a Pandas dataframe and return,group by sublib
@@ -104,7 +106,7 @@ def multicount(dfile, number_of_workers=5):
   #make a list of arguments, each row/item is a call
   arglist = zip(dfile['filepath'].tolist(),dfile['sgstart'].tolist(),
       dfile['sgstop'].tolist(), dfile['trim3'].tolist(), 
-      dfile['sample'].tolist(), dfile['sublib'].tolist())
+      dfile['sample'].tolist(), dfile['sublib'].tolist(),[filetype]*dfile.shape[0])
   resultList = work_pool.map(sgcountwrapper, arglist)  
   work_pool.close()
   work_pool.join()
@@ -157,24 +159,37 @@ def trimseq(seq,start,stop,trim3=None):
   return trim_seq
 
 
-def sgcount(fqfile,sgstart, sgstop, trim3, sample="count",sublib="sublib"):
+def sgcount(fqfile,sgstart, sgstop, trim3, sample="count",sublib="sublib",filetype='fqgz'):
   '''
-  Count sequence frequency in a fastq file.
+  Count sequence frequency in a fastq/fastq/fastq.gz file.
   Write result in a temp file due to Python multiprocessing hang with huge result. (It can only handle int and string, not a instance of a class)
   '''
   trim_out = open(fqfile+".trim","w")
   total_count = 0
   seqdic = {}
-  for record in SeqIO.parse(fqfile,"fastq"):
-    total_count += 1
-    if total_count % 500000 ==0:
-      logging.info("Processed "+fqfile+" "+str(total_count)+" reads...")
-      #break
-    sequence =  trimseq(str(record.seq),sgstart, sgstop, trim3)
-    print >> trim_out, ">"+record.id+"\n"+sequence
-    if not seqdic.has_key(sequence):
-      seqdic[sequence] = 0
-    seqdic[sequence]+=1
+  if filetype == "fq":
+    filehandle = open(fqfile)
+    recordline = 4
+  elif filetype == "fa":
+    filehandle = open(fqfile)
+    recordline = 2
+  elif filetype == "fqgz":
+    filehandle = gzip.open(fqfile)
+    recordline = 4
+  for i, line in enumerate(filehandle):
+    if i%recordline == 0:#the beginning of a record
+      seq_id = line.rstrip().replace("@","").replace(">","")
+    if i%recordline == 1:
+      seq = line.rstrip()
+      total_count += 1
+      if total_count % 500000 ==0:
+        logging.info("Processed "+fqfile+" "+str(total_count)+" reads...")
+        #break
+      sequence =  trimseq(seq,sgstart, sgstop, trim3)
+      print >> trim_out, ">"+seq_id+"\n"+sequence
+      if not seqdic.has_key(sequence):
+        seqdic[sequence] = 0
+      seqdic[sequence]+=1
   seq_count = pd.DataFrame(seqdic.items(),columns=['Sequence',sample])
   #logging.info(seq_count.shape)
   seq_count.to_csv(fqfile+".tmpcount",sep="\t",index=False)

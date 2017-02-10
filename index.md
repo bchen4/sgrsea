@@ -1,4 +1,5 @@
 #sgRSEA
+
 ###Enrichment Analysis of CRISPR/Cas9 Knockout Screen Data
 
 
@@ -18,6 +19,7 @@ For detailed [manual](https://github.com/bchen4/sgrsea/wiki/Manual)
 
 
 ##Prerequisites
+
 * Python 2.7
 * [Pandas](http://pandas.pydata.org/)
 * [Numpy](http://www.numpy.org/)
@@ -28,6 +30,7 @@ For detailed [manual](https://github.com/bchen4/sgrsea/wiki/Manual)
 ##Installation 
 
 ###Option 1: from source code
+
 1 Download sgRSEA
 ```bash
 git clone
@@ -75,6 +78,7 @@ sgrsea stattest -i matrix -o output
 ```
 
 ##License
+
 See the [LICENSE](https://github.com/bchen4/sgrsea/blob/master/LICENSE.txt) file for license rights and limitations MIT.
 
 

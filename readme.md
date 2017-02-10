@@ -4,11 +4,12 @@
 
 
 
-**Version** : v0.0.5
+**Version** : v0.0.6
 
 **Authors**
 
 Beibei Chen (beibei.chen@utsouthwestern.edu)
+
 Jungsik Noh (junsik.noh@utsouthwestern.edu)
 
 **Maintainer**: Beibei Chen

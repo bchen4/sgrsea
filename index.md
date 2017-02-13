@@ -1,6 +1,6 @@
-#sgRSEA
+# sgRSEA
 
-###Enrichment Analysis of CRISPR/Cas9 Knockout Screen Data
+### Enrichment Analysis of CRISPR/Cas9 Knockout Screen Data
 
 
 
@@ -18,7 +18,7 @@ Jungsik Noh (junsik.noh@utsouthwestern.edu)
 For detailed [manual](https://github.com/bchen4/sgrsea/wiki/Manual)
 
 
-##Prerequisites
+## Prerequisites
 
 * Python 2.7
 * [Pandas](http://pandas.pydata.org/)
@@ -27,9 +27,9 @@ For detailed [manual](https://github.com/bchen4/sgrsea/wiki/Manual)
 * [scipy](https://www.scipy.org/)
 * [biopython](http://biopython.org/)
 
-##Installation 
+## Installation 
 
-###Option 1: from source code
+### Option 1: from source code
 
 1 Download sgRSEA
 ```bash
@@ -47,7 +47,7 @@ pip install -r requirements.txt
 python setup.py install
 ```
 
-##Quick start
+## Quick start
 
 sgRSEA can be run on specific steps as well as fastq-to-result using a single command.
 
@@ -77,11 +77,11 @@ sgrsea stattest -i matrix -o output
 
 ```
 
-##License
+## License
 
 See the [LICENSE](https://github.com/bchen4/sgrsea/blob/master/LICENSE.txt) file for license rights and limitations MIT.
 
 
-##Also available in R
+## Also available in R
 
 https://cran.r-project.org/web/packages/sgRSEA/index.html

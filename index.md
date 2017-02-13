@@ -7,13 +7,14 @@
 
 **Version** : v0.0.6
 
+
 **Authors**
 
-Beibei Chen (beibei.chen@utsouthwestern.edu)
+Beibei Chen (beibei.chen@utsouthwestern.edu) Maintainer
 
 Jungsik Noh (junsik.noh@utsouthwestern.edu)
 
-**Maintainer**: Beibei Chen
+
 
 For detailed [manual](https://github.com/bchen4/sgrsea/wiki/Manual)
 

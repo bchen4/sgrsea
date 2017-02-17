@@ -28,29 +28,6 @@ def prepare_argparser():
   #argparser.add_argument("--bg-row-stop",dest = "bgrowstop",type=int, default=-1, help = "Row count of the stop of control sgRNA block")
   return(argparser)
 
-#DEP#def getBackground(infile,nontag="",tagStart=0,tagStop=0):
-#DEP#  '''Get background data frame from either string tag or row range.
-#DEP#  '''
-#DEP#  if len(nontag)>0:
-#DEP#    bgFile = infile[infile.iloc[:,0].str.contains(nontag)]
-#DEP#    dataFile = infile[infile.iloc[:,0].str.contains(nontag)==False]
-#DEP#  elif tagStart<tagStop and tagStart<infile.shape[0]: #use the row range to get file
-#DEP#    tagStart -= 1
-#DEP#    tagStop = min(infile.shape[0],tagStop)
-#DEP#    bgFile = infile.iloc[tagStart:tagStop,:]
-#DEP#    dataFile = infile.iloc[0:tagStart-1,:].append(infile.iloc[tagStop:,:])
-#DEP#  else:#Non background
-#DEP#    logging.info("No designed NonTargeting sgRNAs, use input data as backgound.")
-#DEP#    bgFile = copy.copy(infile)
-#DEP#    dataFile = infile
-#DEP#
-#DEP#  #logging.debug("bgFile: "+str(bgFile.shape[0]))
-#DEP#  #logging.debug("dataFile: "+str(dataFile.shape[0]))
-#DEP#  if bgFile.shape[0]==0: #backgound file is empty
-#DEP#    logging.info("There is no NonTargeting sgRNA found. Use input data as background.")
-#DEP#    bgFile = copy.copy(infile)
-#DEP#    dataFile = infile
-#DEP#  return (dataFile,bgFile)
 
 def addZstat(data_df, pNull):
   data_df['pmme'] = data_df['treat']/(data_df['treat']+data_df['ctrl'])

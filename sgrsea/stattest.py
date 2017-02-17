@@ -173,7 +173,13 @@ def runStatinfer(infile,outfile,multiplier,randomseed):
   #  p0 = pMME(bgFile)
   #else:#Use dataset as background
   ##logging.debug("stattest started "+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
-  dataFile = pd.read_table(infile)
+  if isinstance(infile,str):
+    dataFile = pd.read_table(infile)
+  elif isinstance(infile, pd.DataFrame):
+    dataFile = infile
+  else:
+    logging.error("Input file for stattest is not correct. Exit")
+    sys.exit(1)
   p0 = pMME(dataFile.iloc[:,2],dataFile.iloc[:,3])
   if p0 ==0 or p0 ==1:
     logging.error("pMME for background equals to 0/1, indicating no counts for treatment or control. Please check your data. Exit.")

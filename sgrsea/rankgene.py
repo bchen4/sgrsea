@@ -22,7 +22,7 @@ def prepare_argparser():
   return(argparser)
 
 
-def run(infile, designfile, ofile, t, c, collapsemethod):
+def run(infile, designfile, ofile, t, c, multiplier=50, randomseed=0):
   '''
   First construct comparisons:
    1. If treatment and control are numeric, there is no need of design file.
@@ -41,11 +41,11 @@ def run(infile, designfile, ofile, t, c, collapsemethod):
   if not designfile:
     treatment_cols = np.array(t.split(","),dtype=int)
     control_cols = np.array(c.split(","),dtype=int)
-    comparisons = makecomparisions(cfile,treatment_cols,control_cols)
+    comparisons = makecomparisions(cfile,treatment_cols,control_cols,outprefix)
     #Run stattest for each comparision and combine them together
+    rungroupcmp(comparisons, ofile, multiplier, randomseed)
     #df = reformat(cfile, treatment_cols, control_cols, collapsemethod)
     #df.to_csv(ofile,sep="\t",index=False)
-    return
   else:
     dfile = pd.read_table(designfile)
     treatment_cols = np.array(t.split(","),dtype=str)
@@ -54,37 +54,42 @@ def run(infile, designfile, ofile, t, c, collapsemethod):
     queuedic = {}
     workers = []
     for tgroup,cgroup in zip(treatment_cols, control_cols):
-      #For each comparison group, construct comparison for all replicates
+      #For each comparison group, construct comparisons for all replicates
       t_sample = dfile[dfile['group']==tgroup].loc[:,'sample'].unique()
       c_sample = dfile[dfile['group']==cgroup].loc[:,'sample'].unique()
       t_cols = mapcolindex(cfile._get_numeric_data().columns,t_sample)
       c_cols = mapcolindex(cfile._get_numeric_data().columns,c_sample)
-      comparisons = makecomparisons(cfile, t_cols, c_cols) 
-      cmp_group_name = tgroup+"_vs_"+cgroup
-      queuedic[cmp_group_name] = Queue() 
-      for comparison_df in comparisons:
-        p = Process(target=callstat, args=queuedic[cmp_group_name], comparison_df, outname, multiplier, randomseed)
-        workers.append(p)
-        p.start()
-     for worker in workers:
-       worker.join()
-      #df = reformat(cfile, t_cols, c_cols,collapsemethod)
-      #outname = ofile+"_"+tgroup+"_vs_"+cgroup
-      #df.to_csv(outname,sep="\t",index=False)
-      #fnames.append(outname)
-    return fnames
+      comparisons = makecomparisons(cfile, t_cols, c_cols, outprefix) 
+      
+      
+def rungroupcmp(inputdflist, outname, multiplier, randomseed, number_of_workers=5):
+  '''
+  Run all comparisons for a group
+  '''
+  work_num = min(len(inputdflist), number_of_workers)
+  work_pool = Pool(work_num)
+  for comparison_df in comparisons:
+    p = Process(target=callstat, args=queuedic[cmp_group_name], comparison_df, outname, multiplier, randomseed)
+    workers.append(p)
+    p.start()
+  for worker in workers:
+    worker.join()
 
 def callstat(queue, df, outname, multiplier, randomseed):
   queue.put(stattest.runStatinfer(df, outname, multiplier, randomseed))
 
-def makecomparisons(cfile, t_cols, c_cols):
+def makecomparisons(cfile, t_cols, c_cols, outprefix):
   '''
   Given normalized count file and column indexs of control and treatment,
-  generate 4-col dataframe for stattest
+  generate 4-col dataframe for stattest, save to file and return file name
+  list
   '''
-  df_list = []
+  df_name_list = []
   for t_index, n_index in zip(t_cols, c_cols):
-    df_list.append(cfile.iloc[:,[0,1, t_index+2, c_index+2]])
+    new_df = cfile.iloc[:,[0,1, t_index+2, c_index+2]]
+    new_df_name = "_".join([outprefix, str(t_index),str(c_index)])+".forStat.txt"
+    df_name_list.append(new_df_name)
+    new_df.to_csv(new_df_name,sep="\t",index=False)
   if (len(t_cols)>len(c_cols)):#need to treat unpaired treatment samples
     number_of_unpair_treatment = len(t_cols) - len(c_cols)
     averge_control = averageReplicates(cfile, c_cols) 
@@ -92,8 +97,10 @@ def makecomparisons(cfile, t_cols, c_cols):
       df = cfile.iloc[:,[0,1,index+2]]
       df = df.merge(average_control, on='sgRNA', how='left')
       df = df.fillna(1.0)
-      df_list.append(df)
-  return df_list
+      df_name = "_".join([outprefix, str(c_cols+index),"averageCtrl"])+".forStat.txt"
+      df_name_list.append(df_name)
+      df.to_csv(df_name,sep="\t",index=False)
+  return df_name_list
 
 def mapcolindex(header,samples):
   col = []
@@ -108,13 +115,11 @@ def averageReplicates(cfile, cols):
   return cfile.loc[:,['sgRNA','ave_ctrl']]
 
 
-def run(args):
-  runReformat(args.infile, args.designfile, args.outfile, args.treat, args.ctrl)
 
 def main():
   argparser = prepare_argparser()
   args = argparser.parse_args()
-  runReformat(args.infile, args.designfile, args.outfile, args.treat, args.ctrl)
+  run(args.infile, args.designfile, args.outfile, args.treat, args.ctrl, args.multiplier, args.randomseed)
     
 if __name__=="__main__":
   main()

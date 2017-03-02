@@ -6,6 +6,7 @@ import argparse as ap
 import logging
 import pandas as pd
 import numpy as np
+from scipy.stat.mstats import gmean
 
 logging.basicConfig(level=10)
 
@@ -51,8 +52,6 @@ def run(infile, designfile, ofile, t, c, multiplier=50, randomseed=0):
     treatment_cols = np.array(t.split(","),dtype=str)
     control_cols = np.array(c.split(","),dtype=str)
     fnames = []
-    queuedic = {}
-    workers = []
     for tgroup,cgroup in zip(treatment_cols, control_cols):
       #For each comparison group, construct comparisons for all replicates
       t_sample = dfile[dfile['group']==tgroup].loc[:,'sample'].unique()
@@ -60,23 +59,51 @@ def run(infile, designfile, ofile, t, c, multiplier=50, randomseed=0):
       t_cols = mapcolindex(cfile._get_numeric_data().columns,t_sample)
       c_cols = mapcolindex(cfile._get_numeric_data().columns,c_sample)
       comparisons = makecomparisons(cfile, t_cols, c_cols, outprefix) 
+      rungroupcmp(comparisons, ofile, multiplier, randomseed)  
       
-      
-def rungroupcmp(inputdflist, outname, multiplier, randomseed, number_of_workers=5):
+def rungroupcmp(inputdfnamelist, outprefix, multiplier, randomseed, number_of_workers=5):
   '''
   Run all comparisons for a group
   '''
-  work_num = min(len(inputdflist), number_of_workers)
+  work_num = min(len(inputdfnamelist), number_of_workers)
   work_pool = Pool(work_num)
-  for comparison_df in comparisons:
-    p = Process(target=callstat, args=queuedic[cmp_group_name], comparison_df, outname, multiplier, randomseed)
-    workers.append(p)
-    p.start()
-  for worker in workers:
-    worker.join()
+  arglist = zip(inputdfnamelist,[multiplier]*len(inputdfnamelist), [randomseed]*len(inputdfnamelist) )
+  resultList = work_pool.map(callstat, arglist)
+  work_pool.close()
+  work_pool.join()
+#get result sgRSEA result file names
+  if len(resultList)>1:#merge results together and calculate geometric mean
+  #change df column names and merge
+  pos_rank_cols = []#record new rank column names for future use
+  neg_rank_cols = []
+  ini_dfname = resultList[0]
+  ini_colprefix = ini_dfname.replace(".sgRSEA.xls","")
+  res_df = pd.read_table(ini_dfname)
+  new_name = res_df.columns.tolist[0:2].append([ini_colprefix+"_"]*len(res_df.columns.tolist[2:])+ res_df.columns.tolist[2:])
+  res_df.columns = new_name
+  pos_rank_cols.append(ini_colprefix+"_pos_rank")
+  neg_rank_cols.append(ini_colprefix+"_neg_rank")
+  for dfname in resultList[1:]:
+    df = pd.read_table(dfname)
+    col_prefix = dfname.replace(".sgRSEA.xls","")
+    new_name = df.columns.tolist[0:2].append([colprefix+"_"]*len(res_df.columns.tolist[2:])+ res_df.columns.tolist[2:])
+    df.columns = new_name
+    pos_rank_cols.append(colprefix+"_pos_rank")
+    neg_rank_cols.append(colprefix+"_neg_rank")
+    res_df = res_df.merge(df, on=['sgRNA','Gene'])
+  #Calculate geometric mean for the ranks
+  res_df['pos_geomean'] = gmean(res_df.loc[:, pos_rank_cols])
+  res_df['neg_geomean'] = gmean(res_df.loc[:, neg_rank_cols])
+  res_df = res_df.sort_values(by='pos_geomean', ascending=True)
+  res_df = res_df.reset_index(drop=True)
+  res_df['pos_geomean_rank'] = res_df.index + 1
+  res_df['neg_geomean_rank'] = res_df.shape[0] - res_df['pos_geomean_rank']
 
-def callstat(queue, df, outname, multiplier, randomseed):
-  queue.put(stattest.runStatinfer(df, outname, multiplier, randomseed))
+  res_df.to_csv(outprfix+".sgRSEA.xls", sep="\t", index=False)
+
+
+def callstat(args):
+  return stattest.runStatinfer(*args)
 
 def makecomparisons(cfile, t_cols, c_cols, outprefix):
   '''

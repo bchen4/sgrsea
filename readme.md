@@ -21,11 +21,11 @@ For detailed [manual](https://github.com/bchen4/sgrsea/wiki/Manual)
 * Python 2.7
 * [Pandas](http://pandas.pydata.org/)
 * [Numpy](http://www.numpy.org/)
-* [statsmodels](http://statsmodels.sourceforge.net/) 
+* [statsmodels](http://statsmodels.sourceforge.net/)
 * [scipy](https://www.scipy.org/)
 * [biopython](http://biopython.org/)
 
-## Installation 
+## Installation
 
 ### Option 1: from source code
 1 Download sgRSEA
@@ -48,23 +48,23 @@ python setup.py install
 
 sgRSEA can be run on specific steps as well as fastq-to-result using a single command.
 
-```python
+```bash
 #Run the suite from fastq to final results
 sgrsea run -d design_file -o my_experiment
 
 #Get the count for single fastq file
-sgrsea count -i my_fastq -o output -l sgRNA_lib 
+sgrsea count -i my_fastq -o output -l sgRNA_lib
 
 #Get the count matrix of multiple fastq file and generate a matrix
 sgrsea count -d design.txt -o output_prefix
 
 #Normalize the count matrix
-sgrsea normalization -i count_matrix --ormalize-method total -o outputfile
+sgrsea normalization -i count_matrix --normalize-method total -o outputfile
 
 #Normalize the count matrix. There are sub-libs sequenced separately
-sgrsea normalization -i count_matrix --ormalize-method total -o outputfile --split-lib
+sgrsea normalization -i count_matrix --normalize-method total -o outputfile --split-lib
 
-#Reformat the matrix into sgRSEA 4-column matrix. 
+#Reformat the matrix into sgRSEA 4-column matrix.
 #-t and -c values MUST match group content of the design file
 sgrsea reformat -i normalized_matrix -d design.txt -t Heat,Cold,Dry -c Ctrl,Ctrl,Ctrl -o output_prefix --collapse-replicates auto
 

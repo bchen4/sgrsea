@@ -6,7 +6,9 @@ import argparse as ap
 import logging
 import pandas as pd
 import numpy as np
-from scipy.stat.mstats import gmean
+import stattest
+from multiprocessing import Pool
+from scipy.stats.mstats import gmean
 
 logging.basicConfig(level=10)
 
@@ -20,6 +22,8 @@ def prepare_argparser():
   argparser.add_argument("-d","--design",dest = "designfile",type=str, help="output")
   argparser.add_argument("-t","--treatment",dest="treat",type=str,required=True, help = "columns/name of treatment samples")
   argparser.add_argument("-c","--control",dest="ctrl",type=str,required=True, help="columns/name of control samples")
+  argparser.add_argument("--multiplier",dest="multiplier",type=int,default=50, help="Multiplier to generate background")
+  argparser.add_argument("--random-seed",dest="randomSeed",type=int,default=None, help="Random seed to control permutation process")
   return(argparser)
 
 
@@ -42,7 +46,7 @@ def run(infile, designfile, ofile, t, c, multiplier=50, randomseed=0):
   if not designfile:
     treatment_cols = np.array(t.split(","),dtype=int)
     control_cols = np.array(c.split(","),dtype=int)
-    comparisons = makecomparisions(cfile,treatment_cols,control_cols,outprefix)
+    comparisons = makecomparisons(cfile,treatment_cols,control_cols,ofile)
     #Run stattest for each comparision and combine them together
     rungroupcmp(comparisons, ofile, multiplier, randomseed)
     #df = reformat(cfile, treatment_cols, control_cols, collapsemethod)
@@ -67,39 +71,51 @@ def rungroupcmp(inputdfnamelist, outprefix, multiplier, randomseed, number_of_wo
   '''
   work_num = min(len(inputdfnamelist), number_of_workers)
   work_pool = Pool(work_num)
-  arglist = zip(inputdfnamelist,[multiplier]*len(inputdfnamelist), [randomseed]*len(inputdfnamelist) )
+  #make output name list
+  outnamelist = []
+  for name in inputdfnamelist:
+    outnamelist.append(name+".out")
+  arglist = zip(inputdfnamelist,outnamelist,[multiplier]*len(inputdfnamelist), [randomseed]*len(inputdfnamelist) )
   resultList = work_pool.map(callstat, arglist)
   work_pool.close()
   work_pool.join()
 #get result sgRSEA result file names
+  #logging.debug(resultList)
   if len(resultList)>1:#merge results together and calculate geometric mean
   #change df column names and merge
-  pos_rank_cols = []#record new rank column names for future use
-  neg_rank_cols = []
-  ini_dfname = resultList[0]
-  ini_colprefix = ini_dfname.replace(".sgRSEA.xls","")
-  res_df = pd.read_table(ini_dfname)
-  new_name = res_df.columns.tolist[0:2].append([ini_colprefix+"_"]*len(res_df.columns.tolist[2:])+ res_df.columns.tolist[2:])
-  res_df.columns = new_name
-  pos_rank_cols.append(ini_colprefix+"_pos_rank")
-  neg_rank_cols.append(ini_colprefix+"_neg_rank")
-  for dfname in resultList[1:]:
-    df = pd.read_table(dfname)
-    col_prefix = dfname.replace(".sgRSEA.xls","")
-    new_name = df.columns.tolist[0:2].append([colprefix+"_"]*len(res_df.columns.tolist[2:])+ res_df.columns.tolist[2:])
-    df.columns = new_name
-    pos_rank_cols.append(colprefix+"_pos_rank")
-    neg_rank_cols.append(colprefix+"_neg_rank")
-    res_df = res_df.merge(df, on=['sgRNA','Gene'])
+    pos_rank_cols = []#record new rank column names for future use
+    neg_rank_cols = []
+    ini_dfname = resultList[0]
+    #ini_colprefix = ini_dfname.replace(".sgRSEA.xls","")
+    res_df = pd.read_table(ini_dfname)
+    logging.debug(res_df.head())
+    #new_name = res_df.columns.tolist()[0:2].append([ini_colprefix+"_"]*len(res_df.columns.tolist()[2:])+ res_df.columns.tolist()[2:])
+    
+    #logging.debug(new_name)
+    #res_df.columns = new_name
+    pos_rank_cols.append(res_df.columns.tolist()[7])
+    neg_rank_cols.append(res_df.columns.tolist()[8])
+    for dfname in resultList[1:]:
+      df = pd.read_table(dfname)
+      #col_prefix = dfname.replace(".sgRSEA.xls","")
+      #new_name = df.columns.tolist()[0:2].append([colprefix+"_"]*len(res_df.columns.tolist()[2:])+ res_df.columns.tolist()[2:])
+      #df.columns = new_name
+      #pos_rank_cols.append(colprefix+"_pos_rank")
+      #neg_rank_cols.append(colprefix+"_neg_rank")
+      pos_rank_cols.append(res_df.columns.tolist()[7])
+      neg_rank_cols.append(res_df.columns.tolist()[8])
+      
+      res_df = res_df.merge(df, on=['Gene'])
   #Calculate geometric mean for the ranks
-  res_df['pos_geomean'] = gmean(res_df.loc[:, pos_rank_cols])
-  res_df['neg_geomean'] = gmean(res_df.loc[:, neg_rank_cols])
+  logging.debug(pos_rank_cols)
+  res_df['pos_geomean'] = gmean(res_df.loc[:, pos_rank_cols], axis=1)
+  res_df['neg_geomean'] = gmean(res_df.loc[:, neg_rank_cols], axis=1)
   res_df = res_df.sort_values(by='pos_geomean', ascending=True)
   res_df = res_df.reset_index(drop=True)
   res_df['pos_geomean_rank'] = res_df.index + 1
   res_df['neg_geomean_rank'] = res_df.shape[0] - res_df['pos_geomean_rank']
 
-  res_df.to_csv(outprfix+".sgRSEA.xls", sep="\t", index=False)
+  res_df.to_csv(outprefix+".gm.sgRSEA.xls", sep="\t", index=False)
 
 
 def callstat(args):
@@ -112,7 +128,7 @@ def makecomparisons(cfile, t_cols, c_cols, outprefix):
   list
   '''
   df_name_list = []
-  for t_index, n_index in zip(t_cols, c_cols):
+  for t_index, c_index in zip(t_cols, c_cols):
     new_df = cfile.iloc[:,[0,1, t_index+2, c_index+2]]
     new_df_name = "_".join([outprefix, str(t_index),str(c_index)])+".forStat.txt"
     df_name_list.append(new_df_name)
@@ -146,7 +162,7 @@ def averageReplicates(cfile, cols):
 def main():
   argparser = prepare_argparser()
   args = argparser.parse_args()
-  run(args.infile, args.designfile, args.outfile, args.treat, args.ctrl, args.multiplier, args.randomseed)
+  run(args.infile, args.designfile, args.outfile, args.treat, args.ctrl, args.multiplier, args.randomSeed)
     
 if __name__=="__main__":
   main()

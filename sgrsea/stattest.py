@@ -22,7 +22,7 @@ def prepare_argparser():
   argparser.add_argument("-i","--input",dest = "infile",type=str,required=True, help = "sgRSEA input file, 4 columns")
   argparser.add_argument("-o","--output",dest = "outfile",type=str,required=True, help = "output file name")
   argparser.add_argument("--multiplier",dest = "multiplier",type=int, default = 50, help = "Multiplier to generate background")
-  argparser.add_argument("--random-seed",dest = "randomSeed",type=int, default = None, help = "Random seed to control permuation process")
+  argparser.add_argument("--random-seed",dest = "randomSeed",type=int, default = None, help = "Random seed to control permutaion process")
   #argparser.add_argument("--bgtag",dest = "bgtag",type=str, default = "",help = "Sting to identify control sgRNAs")
   #argparser.add_argument("--bg-row-start",dest = "bgrowstart",type=int,default = -1, help = "Row count of the start of control sgRNA block")
   #argparser.add_argument("--bg-row-stop",dest = "bgrowstop",type=int, default=-1, help = "Row count of the stop of control sgRNA block")
@@ -204,8 +204,13 @@ def runStatinfer(infile,outfile,multiplier,randomseed):
   #data_sdf.to_csv("test_real_standardize.txt",sep="\t",header=True,index=False)
   fdf = getPQ(data_sdf,null_s_array)
   fdf = fdf.loc[:,['Gene','sgcount','NScore','pos_p','pos_fdr','neg_p','neg_fdr','pos_rank','neg_rank']]
-  
-  fdf.to_csv(outfile,sep="\t",index=False)
+  #change file header to distinguish replicates
+  header = fdf.columns.tolist()
+  for i in range(2,len(header)):
+    header[i] = outfile+"_"+header[i]
+  fdf.columns = header
+  fdf.to_csv(outfile+".sgRSEA.xls",sep="\t",index=False)
+  return outfile+".sgRSEA.xls"
 
 def main():
   argparser = prepare_argparser()

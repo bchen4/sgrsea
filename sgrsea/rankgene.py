@@ -49,8 +49,6 @@ def run(infile, designfile, ofile, t, c, multiplier=50, randomseed=0):
     comparisons = makecomparisons(cfile,treatment_cols,control_cols,ofile)
     #Run stattest for each comparision and combine them together
     rungroupcmp(comparisons, ofile, multiplier, randomseed)
-    #df = reformat(cfile, treatment_cols, control_cols, collapsemethod)
-    #df.to_csv(ofile,sep="\t",index=False)
   else:
     dfile = pd.read_table(designfile)
     treatment_cols = np.array(t.split(","),dtype=str)
@@ -62,7 +60,7 @@ def run(infile, designfile, ofile, t, c, multiplier=50, randomseed=0):
       c_sample = dfile[dfile['group']==cgroup].loc[:,'sample'].unique()
       t_cols = mapcolindex(cfile._get_numeric_data().columns,t_sample)
       c_cols = mapcolindex(cfile._get_numeric_data().columns,c_sample)
-      comparisons = makecomparisons(cfile, t_cols, c_cols, outprefix) 
+      comparisons = makecomparisons(cfile, t_cols, c_cols, ofile) 
       rungroupcmp(comparisons, ofile, multiplier, randomseed)  
       
 def rungroupcmp(inputdfnamelist, outprefix, multiplier, randomseed, number_of_workers=5):
@@ -86,22 +84,11 @@ def rungroupcmp(inputdfnamelist, outprefix, multiplier, randomseed, number_of_wo
     pos_rank_cols = []#record new rank column names for future use
     neg_rank_cols = []
     ini_dfname = resultList[0]
-    #ini_colprefix = ini_dfname.replace(".sgRSEA.xls","")
     res_df = pd.read_table(ini_dfname)
-    logging.debug(res_df.head())
-    #new_name = res_df.columns.tolist()[0:2].append([ini_colprefix+"_"]*len(res_df.columns.tolist()[2:])+ res_df.columns.tolist()[2:])
-    
-    #logging.debug(new_name)
-    #res_df.columns = new_name
     pos_rank_cols.append(res_df.columns.tolist()[7])
     neg_rank_cols.append(res_df.columns.tolist()[8])
     for dfname in resultList[1:]:
       df = pd.read_table(dfname)
-      #col_prefix = dfname.replace(".sgRSEA.xls","")
-      #new_name = df.columns.tolist()[0:2].append([colprefix+"_"]*len(res_df.columns.tolist()[2:])+ res_df.columns.tolist()[2:])
-      #df.columns = new_name
-      #pos_rank_cols.append(colprefix+"_pos_rank")
-      #neg_rank_cols.append(colprefix+"_neg_rank")
       pos_rank_cols.append(res_df.columns.tolist()[7])
       neg_rank_cols.append(res_df.columns.tolist()[8])
       

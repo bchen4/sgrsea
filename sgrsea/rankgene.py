@@ -20,7 +20,7 @@ def prepare_argparser():
   argparser = ap.ArgumentParser(description=description, epilog = epilog)
   argparser.add_argument("-i","--input",dest = "infile",type=str,required=True, help="input BAM file")
   argparser.add_argument("-o","--output",dest = "outfile",type=str,required=True, help="output")
-  argparser.add_argument("-d","--design",dest = "designfile",type=str, help="output")
+  argparser.add_argument("-d","--design",dest = "designfile",type=str, help="design file")
   argparser.add_argument("-t","--treatment",dest="treat",type=str,required=True, help = "columns/name of treatment samples")
   argparser.add_argument("-c","--control",dest="ctrl",type=str,required=True, help="columns/name of control samples")
   argparser.add_argument("--multiplier",dest="multiplier",type=int,default=50, help="Multiplier to generate background")

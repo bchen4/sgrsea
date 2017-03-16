@@ -8,7 +8,7 @@ import sgrsea
 
 logging.basicConfig(format='%(levelname)s:%(message)s',level=logging.DEBUG)
 
-sgrsea_VERSION = "v0.0.6"
+sgrsea_VERSION = "v1.0.0"
 
 def prepare_argparser():
   description = "sgRSEA: identify significant genes in CRISPR-Cas9 experiment"
@@ -26,7 +26,7 @@ def prepare_argparser():
   #command for reformat
   add_reformat_parser(subparsers)
   #command for stattest
-  add_stattest_parser(subparsers)
+  add_rank_parser(subparsers)
   return(argparser)
 
 def add_run_parser(subparsers):
@@ -75,7 +75,7 @@ def add_count_parser(subparsers):
 def add_normalization_parser(subparsers):
  '''Add argument parser for normalization
  '''
- subc_normalization = subparsers.add_parser("normalization", help = "Normalize sgRNA count matrix")
+ subc_normalization = subparsers.add_parser("normalize", help = "Normalize sgRNA count matrix")
  subc_normalization.add_argument("-i","--input",dest = "infile",type=str, required=True, help="input count file matrix")
  subc_normalization.add_argument("--normalize-method",dest="method", default="total", type=str,help ="design file", choices=['cpm','total','median','upperquantile'])
  subc_normalization.add_argument("-o","--output",dest = "outfile",type=str,required=True, help="output")
@@ -94,15 +94,16 @@ def add_reformat_parser(subparsers):
   subc_reformat.add_argument("--collapse-replicates",dest="collapsemethod",type= str, help = "Way to collapse replicates", default="auto", choices=['auto','stack','mean'])
 
 
-def add_stattest_parser(subparsers):
+def add_rank_parser(subparsers):
   '''Add argument parser for statistical test
   '''
-  subc_stattest = subparsers.add_parser("stattest", help="Identify significant genes from normalized count table")
-  subc_stattest.add_argument("-i","--input",dest = "infile",type=str,required=True, help = "sgRSEA input file, 4 columns")
-  subc_stattest.add_argument("-o","--output",dest = "outfile",type=str,required=True, help = "output file name")
-  subc_stattest.add_argument("--multiplier",dest = "multiplier",type=int, default = 50, help = "Multiplier to generate background")
-  subc_stattest.add_argument("--random-seed",dest = "randomSeed",type=int, default = None, help = "Random seed to control permuation process")
-  #subc_stattest.add_argument("--bgtag",dest = "bgtag",type=str, default = "",help = "Sting to identify control sgRNAs")
+  subc_rank = subparsers.add_parser("rank", help="Identify significant genes from normalized count table")
+  subc_rank.add_argument("-i","--input",dest = "infile",type=str,required=True, help = "sgRSEA input file, 4 columns")
+  subc_rank.add_argument("-o","--output",dest = "outfile",type=str,required=True, help = "output file name")
+  subc_rank.add_argument("-d","--design",dest = "designfile", type=str, help="design file")
+  subc_rank.add_argument("--multiplier",dest = "multiplier",type=int, default = 50, help = "Multiplier to generate background")
+  subc_rank.add_argument("--random-seed",dest = "randomSeed",type=int, default = None, help = "Random seed to control permuation process")
+  subc_rank.add_argument("--collapse-replicates",dest = "collapsemethod",type=str, default = "None",help = "Way to collapse replicates", choices=['auto','stack','mean','None'])
   #subc_stattest.add_argument("--bg-row-start",dest = "bgrowstart",type=int,default = -1, help = "Row count of the start of control sgRNA block")
   #subc_stattest.add_argument("--bg-row-stop",dest = "bgrowstop",type=int, default=-1, help = "Row count of the stop of control sgRNA block")
   return
@@ -115,12 +116,12 @@ def main():
   if subcommand == "count":
     #import sgcount_fastq
     sgrsea.sgcount.run(args)
-  elif subcommand == "normalization":
+  elif subcommand == "normalize":
     sgrsea.normalization.run(args)
   elif subcommand == "reformat":
     sgrsea.reformatCountTable.run(args)
-  elif subcommand == "stattest":
-    sgrsea.stattest.run(args)
+  elif subcommand == "rank":
+    sgrsea.rankgene.run(args)
   elif subcommand == "run":
     sgrsea.runsgrsea.run(args)
 

@@ -10,7 +10,8 @@ import argparse as ap
 import sgcount
 import normalization
 import stattest
-import reformatCountTable 
+import reformatCountTable
+import rankgene
 from multiprocessing import Process, Queue
 logging.basicConfig(level=10)
 
@@ -35,7 +36,7 @@ def prepare_argparser():
   argparser.add_argument("--c-label",dest="ctrllabel",type=str, help="label of control samples")
   argparser.add_argument("--multiplier",dest = "multiplier",type=int, default = 50, help = "Multiplier to generate background")
   argparser.add_argument("--random-seed",dest = "randomSeed",type=int, default = None, help = "Random seed to control permutation process")
-  argparser.add_argument("--collapse-replicates",dest="collapsemethod",type=str, help = "Way to collapse replicates", default="auto", choices=['auto','stack','mean'])
+  argparser.add_argument("--collapse-replicates",dest="collapsemethod",type=str, help = "Way to collapse replicates", default="None", choices=['auto','stack','mean','None'])
   argparser.add_argument("--no-count", dest="nocount", default=False, action='store_true', help="Skip counting step. Uses output contents as input")
 
   #argparser.add_argument("--bgtag",dest = "bgtag",type=str, default = "",help = "Sting to identify control sgRNAs")
@@ -55,25 +56,28 @@ def run(args):
     logging.error("There is no count file. Exit.")
     sys.exit(1)
   if isinstance(args.designfile,str):#multiple files, go further
-    if os.path.exists(args.outfile+".norm.txt"):
-      files = reformatCountTable.runReformat(args.outfile+".norm.txt",args.designfile, args.outfile,args.treat, args.ctrl, args.collapsemethod)
-    else:
+    if not os.path.exists(args.outfile+".norm.txt"):
       logging.error("There is no normalized count file. Exit.")
       sys.exit(1)
-    if len(files)==0:
-      logging.error("There is no input files for sgRSEA to run. Exit.")
-      sys.exit(1)
-    else:
-      work_num = len(files)
-      work_queue = Queue()
-      workers = []
-      for fn in files:
-        logging.info("Running test on "+fn)
-        p = Process(target = callstat, args=(work_queue,fn,fn+".sgRSEA.xls",args.multiplier, args.randomSeed))
-        workers.append(p)
-        p.start()
-      for process in workers:
-        process.join()
+    else:# Proceed
+      if args.collapsemethod != "None":
+        files = reformatCountTable.runReformat(args.outfile+".norm.txt",args.designfile, args.outfile,args.treat, args.ctrl, args.collapsemethod)
+        if len(files)==0:
+          logging.error("There is no input files for sgRSEA to run. Exit.")
+          sys.exit(1)
+        else:
+          work_num = len(files)
+          work_queue = Queue()
+          workers = []
+          for fn in files:
+            logging.info("Running test on "+fn)
+            p = Process(target = callstat, args=(work_queue,fn,fn+".sgRSEA.xls",args.multiplier, args.randomSeed))
+            workers.append(p)
+            p.start()
+          for process in workers:
+            process.join()
+      else:#Use GM ranking for replicates
+        rankgene.run(args.outfile+".norm.txt", args.designfile, args.outfile, args.treat, args.ctrl, args.multiplier, args.randomSeed)
 
 def callstat(queue, fname, outname, multiplier, randomseed):
   queue.put(stattest.runStatinfer(fname,outname,multiplier,randomseed))

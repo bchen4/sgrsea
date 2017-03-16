@@ -33,13 +33,13 @@ def runReformat(infile, designfile, ofile, t, c, collapsemethod):
   except IOError,message:
     print >> sys.stderr, "cannot open file",message
     sys.exit(1)
-  if not designfile:
+  try:
     treatment_cols = np.array(t.split(","),dtype=int)
     control_cols = np.array(c.split(","),dtype=int)
     df = reformat(cfile, treatment_cols, control_cols, collapsemethod)
     df.to_csv(ofile,sep="\t",index=False)
     return [ofile]
-  else:
+  except:
     dfile = pd.read_table(designfile)
     treatment_cols = np.array(t.split(","),dtype=str)
     control_cols = np.array(c.split(","),dtype=str)

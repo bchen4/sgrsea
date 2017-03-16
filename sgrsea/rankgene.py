@@ -72,7 +72,7 @@ def rungroupcmp(inputdfnamelist, outprefix, multiplier, randomseed, number_of_wo
   #make output name list
   outnamelist = []
   for name in inputdfnamelist:
-    outnamelist.append(name+".out")
+    outnamelist.append(name.replace(".forStat",""))
   arglist = zip(inputdfnamelist,outnamelist,[multiplier]*len(inputdfnamelist), [randomseed]*len(inputdfnamelist) )
   resultList = work_pool.map(callstat, arglist)
   work_pool.close()
@@ -85,12 +85,14 @@ def rungroupcmp(inputdfnamelist, outprefix, multiplier, randomseed, number_of_wo
     neg_rank_cols = []
     ini_dfname = resultList[0]
     res_df = pd.read_table(ini_dfname)
-    pos_rank_cols.append(res_df.columns.tolist()[7])
-    neg_rank_cols.append(res_df.columns.tolist()[8])
+    res_df = res_df.iloc[:,[0,1,7,8]]
+    pos_rank_cols.append(res_df.columns.tolist()[2])
+    neg_rank_cols.append(res_df.columns.tolist()[3])
     for dfname in resultList[1:]:
       df = pd.read_table(dfname)
-      pos_rank_cols.append(res_df.columns.tolist()[7])
-      neg_rank_cols.append(res_df.columns.tolist()[8])
+      df = df.iloc[:,[0,7,8]]
+      pos_rank_cols.append(res_df.columns.tolist()[1])
+      neg_rank_cols.append(res_df.columns.tolist()[2])
       
       res_df = res_df.merge(df, on=['Gene'])
   #Calculate geometric mean for the ranks
@@ -117,7 +119,7 @@ def makecomparisons(cfile, t_cols, c_cols, outprefix):
   df_name_list = []
   for t_index, c_index in zip(t_cols, c_cols):
     new_df = cfile.iloc[:,[0,1, t_index+2, c_index+2]]
-    new_df_name = "_".join([outprefix, str(t_index),str(c_index)])+".forStat.txt"
+    new_df_name = "_".join([outprefix, cfile.columns.tolist()[t_index+2],"vs", cfile.columns.tolist()[c_index]])+".forStat"
     df_name_list.append(new_df_name)
     new_df.to_csv(new_df_name,sep="\t",index=False)
   if (len(t_cols)>len(c_cols)):#need to treat unpaired treatment samples
@@ -127,7 +129,7 @@ def makecomparisons(cfile, t_cols, c_cols, outprefix):
       df = cfile.iloc[:,[0,1,index+2]]
       df = df.merge(average_control, on='sgRNA', how='left')
       df = df.fillna(1.0)
-      df_name = "_".join([outprefix, str(c_cols+index),"averageCtrl"])+".forStat.txt"
+      df_name = "_".join([outprefix, cfile.columns.tolist()[c_cols+index],"vs","averageCtrl"])+".forStat"
       df_name_list.append(df_name)
       df.to_csv(df_name,sep="\t",index=False)
   return df_name_list

@@ -14,6 +14,8 @@ from scipy import stats
 from statsmodels.stats.multitest import multipletests
 
 logging.basicConfig(format='%(levelname)s:%(message)s',level=logging.DEBUG)
+pd.options.mode.chained_assignment = None
+
 
 def prepare_argparser():
   description = "sgRSEA main stat function"

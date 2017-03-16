@@ -43,25 +43,30 @@ def run(infile, designfile, ofile, t, c, multiplier=50, randomseed=0):
   except IOError,message:
     print >> sys.stderr, "cannot open file",message
     sys.exit(1)
-  if not designfile:
-    treatment_cols = np.array(t.split(","),dtype=int)
+  try:
+    treatment_cols = np.array(t.split(","), dtype=int)
     control_cols = np.array(c.split(","),dtype=int)
+
     comparisons = makecomparisons(cfile,treatment_cols,control_cols,ofile)
     #Run stattest for each comparision and combine them together
     rungroupcmp(comparisons, ofile, multiplier, randomseed)
-  else:
+  except:# Use design file
     dfile = pd.read_table(designfile)
     treatment_cols = np.array(t.split(","),dtype=str)
     control_cols = np.array(c.split(","),dtype=str)
     fnames = []
     for tgroup,cgroup in zip(treatment_cols, control_cols):
       #For each comparison group, construct comparisons for all replicates
+      logging.debug(tgroup)
+      logging.debug(cgroup)
       t_sample = dfile[dfile['group']==tgroup].loc[:,'sample'].unique()
       c_sample = dfile[dfile['group']==cgroup].loc[:,'sample'].unique()
       t_cols = mapcolindex(cfile._get_numeric_data().columns,t_sample)
       c_cols = mapcolindex(cfile._get_numeric_data().columns,c_sample)
+      logging.debug(t_cols)
+      logging.debug(c_cols)
       comparisons = makecomparisons(cfile, t_cols, c_cols, ofile) 
-      rungroupcmp(comparisons, ofile, multiplier, randomseed)  
+      rungroupcmp(comparisons, ofile+"_"+tgroup+"_vs_"+cgroup, multiplier, randomseed)  
       
 def rungroupcmp(inputdfnamelist, outprefix, multiplier, randomseed, number_of_workers=5):
   '''
@@ -72,6 +77,7 @@ def rungroupcmp(inputdfnamelist, outprefix, multiplier, randomseed, number_of_wo
   #make output name list
   outnamelist = []
   for name in inputdfnamelist:
+    logging.debug(name)
     outnamelist.append(name.replace(".forStat",""))
   arglist = zip(inputdfnamelist,outnamelist,[multiplier]*len(inputdfnamelist), [randomseed]*len(inputdfnamelist) )
   resultList = work_pool.map(callstat, arglist)
@@ -125,7 +131,7 @@ def makecomparisons(cfile, t_cols, c_cols, outprefix):
   df_name_list = []
   for t_index, c_index in zip(t_cols, c_cols):
     new_df = cfile.iloc[:,[0,1, t_index+2, c_index+2]]
-    new_df_name = "_".join([outprefix, cfile.columns.tolist()[t_index+2],"vs", cfile.columns.tolist()[c_index]])+".forStat"
+    new_df_name = "_".join([outprefix, cfile.columns.tolist()[t_index+2],"vs", cfile.columns.tolist()[c_index+2]])+".forStat"
     df_name_list.append(new_df_name)
     new_df.to_csv(new_df_name,sep="\t",index=False)
   if (len(t_cols)>len(c_cols)):#need to treat unpaired treatment samples
@@ -151,7 +157,6 @@ def averageReplicates(cfile, cols):
   nfile = cfile._get_numeric_data()
   cfile['ave_ctrl'] = nfile.iloc[:,cols].mean(axis=1)
   return cfile.loc[:,['sgRNA','ave_ctrl']]
-
 
 
 def main():

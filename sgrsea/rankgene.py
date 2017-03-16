@@ -78,7 +78,7 @@ def rungroupcmp(inputdfnamelist, outprefix, multiplier, randomseed, number_of_wo
   work_pool.close()
   work_pool.join()
 #get result sgRSEA result file names
-  #logging.debug(resultList)
+  ##logging.debug(resultList)
   if len(resultList)>1:#merge results together and calculate geometric mean
   #change df column names and merge
     pos_rank_cols = []#record new rank column names for future use
@@ -86,17 +86,23 @@ def rungroupcmp(inputdfnamelist, outprefix, multiplier, randomseed, number_of_wo
     ini_dfname = resultList[0]
     res_df = pd.read_table(ini_dfname)
     res_df = res_df.iloc[:,[0,1,7,8]]
+    #logging.debug(res_df.columns)
     pos_rank_cols.append(res_df.columns.tolist()[2])
     neg_rank_cols.append(res_df.columns.tolist()[3])
+    #logging.debug(pos_rank_cols)
+    #logging.debug(neg_rank_cols)
     for dfname in resultList[1:]:
       df = pd.read_table(dfname)
       df = df.iloc[:,[0,7,8]]
-      pos_rank_cols.append(res_df.columns.tolist()[1])
-      neg_rank_cols.append(res_df.columns.tolist()[2])
+      pos_rank_cols.append(df.columns.tolist()[1])
+      neg_rank_cols.append(df.columns.tolist()[2])
       
       res_df = res_df.merge(df, on=['Gene'])
   #Calculate geometric mean for the ranks
-  logging.debug(pos_rank_cols)
+  #logging.debug("pos_rank_cols and neg_rank_cols")
+  #logging.debug(pos_rank_cols)
+  #logging.debug(neg_rank_cols)
+
   res_df['pos_geomean'] = gmean(res_df.loc[:, pos_rank_cols], axis=1)
   res_df['neg_geomean'] = gmean(res_df.loc[:, neg_rank_cols], axis=1)
   res_df = res_df.sort_values(by='pos_geomean', ascending=True)

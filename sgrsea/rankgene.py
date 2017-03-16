@@ -24,10 +24,23 @@ def prepare_argparser():
   argparser.add_argument("-c","--control",dest="ctrl",type=str,required=True, help="columns/name of control samples")
   argparser.add_argument("--multiplier",dest="multiplier",type=int,default=50, help="Multiplier to generate background")
   argparser.add_argument("--random-seed",dest="randomSeed",type=int,default=None, help="Random seed to control permutation process")
+  argparser.add_argument("--collapse-replicates", dest="collapsemethod", type=str, help = "Way to collapse replicates", default="None", choices=['auto','stack','mean','None'])
   return(argparser)
 
 
-def run(infile, designfile, ofile, t, c, multiplier=50, randomseed=0):
+def run(infile, designfile, ofile, t, c, collapse="None", multiplier=50, randomseed=0):
+  if collapse == "None":
+    gmrank(infile, designfile, ofile, t, c, multiplier, randomseed):
+  else:
+    files = reformatCountTable.runReformat(infile, designfile, ofile, t,c, collapse)
+    if len(files)==0:
+      logging.error("There is no input files for sgRSEA to run. Exit")
+      sys.exit(1)
+    else:
+      rungroupcmp(files, outfile, multiplier, randomseed, number_of_workers=5)
+
+
+def gmrank(infile, designfile, ofile, t, c, multiplier=50, randomseed=0):
   '''
   First construct comparisons:
    1. If treatment and control are numeric, there is no need of design file.
@@ -162,7 +175,7 @@ def averageReplicates(cfile, cols):
 def main():
   argparser = prepare_argparser()
   args = argparser.parse_args()
-  run(args.infile, args.designfile, args.outfile, args.treat, args.ctrl, args.multiplier, args.randomSeed)
+  run(args.infile, args.designfile, args.outfile, args.treat, args.ctrl, args.collapsemethod, args.multiplier, args.randomSeed)
     
 if __name__=="__main__":
   main()

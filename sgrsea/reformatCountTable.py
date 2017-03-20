@@ -14,11 +14,11 @@ def prepare_argparser():
   description = "Reformat the count table to sgRSEA format"
   epilog = "For command line options of each command, type %(prog)% COMMAND -h"
   argparser = ap.ArgumentParser(description=description, epilog = epilog)
-  argparser.add_argument("-i","--input",dest = "infile",type=str,required=True, help="input BAM file")
-  argparser.add_argument("-o","--output",dest = "outfile",type=str,required=True, help="output")
-  argparser.add_argument("-d","--design",dest = "designfile",type=str, help="output")
-  argparser.add_argument("-t","--treatment",dest="treat",type=str,required=True, help = "columns/name of treatment samples")
-  argparser.add_argument("-c","--control",dest="ctrl",type=str,required=True, help="columns/name of control samples")
+  argparser.add_argument("-i","--input",dest = "infile",type=str,required=True, help="input count file")
+  argparser.add_argument("-o","--output",dest = "outfile",type=str,required=True, help="Output")
+  argparser.add_argument("-d","--design",dest = "designfile",type=str, help="Design file")
+  argparser.add_argument("-t","--treatment",dest="treat",type=str,required=True, help = "Columns/name of treatment samples")
+  argparser.add_argument("-c","--control",dest="ctrl",type=str,required=True, help="Columns/name of control samples")
   argparser.add_argument("--collapse-replicates",dest="collapsemethod",type=str, help = "Way to collapse replicates", default="auto", choices=['auto','stack','mean'])
   #argparser.add_argument("--c-sample",dest="ctrlsample",type=str, help="sample of control samples")
   return(argparser)

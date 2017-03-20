@@ -34,19 +34,19 @@ def add_run_parser(subparsers):
   '''
   subc_run = subparsers.add_parser("run", help="Run the whole program from fastq to result")
   group = subc_run.add_mutually_exclusive_group()
-  group.add_argument("-i","--input",dest = "infile",type=str, help="input fastq")
-  group.add_argument("-d","--design",dest="designfile",type=str,help = "design file")
-  subc_run.add_argument("-o","--output",dest = "outfile",type=str,required=True, help="output")
+  group.add_argument("-i","--input",dest = "infile",type=str, help="Input fastq")
+  group.add_argument("-d","--design",dest="designfile",type=str,help = "Design file")
+  subc_run.add_argument("-o","--output",dest = "outfile",type=str,required=True, help="Output prefix")
   subc_run.add_argument("-l","--library",dest="libfile",type=str, help = "Gene locus in bed format")
   subc_run.add_argument("--sgstart",dest="sgstart",type=int, default=-1,help = "The first nucleotide sgRNA starts. 1-index")
   subc_run.add_argument("--sgstop",dest="sgstop",type=int, default=-1,help = "The last nucleotide sgRNA starts. 1-index")
   subc_run.add_argument("--trim3",dest="trim3",type=str,help = "The trimming pattern from 3'. This pattern and the following sequence will be removed")
-  subc_run.add_argument("--num-threads",dest="threads",type=int,default=1,help = "Number of threads to use.")
+  subc_run.add_argument("--num-threads",dest="threads",type=int,default=5,help = "Number of threads to use.")
   subc_run.add_argument("--file-type",dest="filetype",type=str,default="fqgz",help = "Type of the input file. Can be fq, fa, fqgz. Default is fqgz", choices=['fq','fa','fqgz'])
-  subc_run.add_argument("--normalize-method",dest="method", default="total", type=str,help ="design file", choices=['cpm','total','median','upperquantile'])
+  subc_run.add_argument("--normalize-method",dest="method", default="total", type=str,help ="Design file", choices=['cpm','total','median','upperquantile'])
   subc_run.add_argument("--split-lib",dest = "splitlib",action='store_true', help="Lib A and B are sequenced separately")
-  subc_run.add_argument("-t","--treatment",dest="treat",type=str,required=True, help = "columns/name of treatment samples")
-  subc_run.add_argument("-c","--control",dest="ctrl",type=str,required=True, help="columns/name of control samples")
+  subc_run.add_argument("-t","--treatment",dest="treat",type=str,required=True, help = "Columns/name of treatment samples")
+  subc_run.add_argument("-c","--control",dest="ctrl",type=str,required=True, help="Columns/name of control samples")
   subc_run.add_argument("--multiplier",dest = "multiplier",type=int, default = 50, help = "Multiplier to generate background")
   subc_run.add_argument("--random-seed",dest = "randomSeed",type=int, default = None, help = "Random seed to control permuation process")
   subc_run.add_argument("--collapse-replicates",dest="collapsemethod",type=str, help = "Way to collapse replicates", default="None", choices=['auto','stack','mean','None'])
@@ -61,14 +61,14 @@ def add_count_parser(subparsers):
   '''
   subc_count = subparsers.add_parser("count", help="Get sgRNA count matrix")
   group = subc_count.add_mutually_exclusive_group()
-  group.add_argument("-i","--input",dest = "infile",type=str, help="input fastq")
-  group.add_argument("-d","--design",dest="designfile",type=str,help = "design file")
-  subc_count.add_argument("-o","--output",dest = "outfile",type=str,required=True, help="output")
+  group.add_argument("-i","--input",dest = "infile",type=str, help="Input fastq")
+  group.add_argument("-d","--design",dest="designfile",type=str,help = "Design file")
+  subc_count.add_argument("-o","--output",dest = "outfile",type=str,required=True, help="Output")
   subc_count.add_argument("-l","--library",dest="libfile",type=str, help = "Gene locus in bed format")
   subc_count.add_argument("--sgstart",dest="sgstart",type=int, default=-1,help = "The first nucleotide sgRNA starts. 1-index")
   subc_count.add_argument("--sgstop",dest="sgstop",type=int, default=-1,help = "The last nucleotide sgRNA starts. 1-index")
   subc_count.add_argument("--trim3",dest="trim3",type=str,help = "The trimming pattern from 3'. This pattern and the following sequence will be removed")
-  subc_count.add_argument("--num-threads",dest="threads",type=int, default=1,help = "Number of threads to use.")
+  subc_count.add_argument("--num-threads",dest="threads",type=int, default=5,help = "Number of threads to use.")
   subc_count.add_argument("--file-type",dest="filetype",type=str,default="fqgz",help = "Type of the input file. Can be fq, fa, fqgz. Default is fqgz", choices=['fq','fa','fqgz'])
   return
 
@@ -76,9 +76,9 @@ def add_normalization_parser(subparsers):
  '''Add argument parser for normalization
  '''
  subc_normalization = subparsers.add_parser("normalize", help = "Normalize sgRNA count matrix")
- subc_normalization.add_argument("-i","--input",dest = "infile",type=str, required=True, help="input count file matrix")
- subc_normalization.add_argument("--normalize-method",dest="method", default="total", type=str,help ="design file", choices=['cpm','total','median','upperquantile'])
- subc_normalization.add_argument("-o","--output",dest = "outfile",type=str,required=True, help="output")
+ subc_normalization.add_argument("-i","--input",dest = "infile",type=str, required=True, help="Input count file matrix")
+ subc_normalization.add_argument("--normalize-method",dest="method", default="total", type=str,help ="Design file", choices=['cpm','total','median','upperquantile'])
+ subc_normalization.add_argument("-o","--output",dest = "outfile",type=str,required=True, help="Output")
  subc_normalization.add_argument("--split-lib",dest = "splitlib",action='store_true', help="Lib A and B are sequenced separately")
  return
 
@@ -86,11 +86,11 @@ def add_reformat_parser(subparsers):
   '''Add argument parser for reformatting count table
   '''
   subc_reformat = subparsers.add_parser("reformat", help="Reformat count table for sgRSEA stat test")
-  subc_reformat.add_argument("-i","--input",dest = "infile",type=str,required=True, help="input BAM file")
-  subc_reformat.add_argument("-o","--output",dest = "outfile",type=str,required= True, help="output")
-  subc_reformat.add_argument("-d","--design",dest = "designfile",type=str, help= "output")
-  subc_reformat.add_argument("-t","--treatment",dest="treat",type=str,required=True, help = "columns/name of treatment samples")
-  subc_reformat.add_argument("-c","--control",dest="ctrl",type=str,required=True , help="columns/name of control samples")
+  subc_reformat.add_argument("-i","--input",dest = "infile",type=str,required=True, help="Input count file")
+  subc_reformat.add_argument("-o","--output",dest = "outfile",type=str,required= True, help="Output")
+  subc_reformat.add_argument("-d","--design",dest = "designfile",type=str, help= "Design file")
+  subc_reformat.add_argument("-t","--treatment",dest="treat",type=str,required=True, help = "Columns/name of treatment samples")
+  subc_reformat.add_argument("-c","--control",dest="ctrl",type=str,required=True , help="Columns/name of control samples")
   subc_reformat.add_argument("--collapse-replicates",dest="collapsemethod",type= str, help = "Way to collapse replicates", default="auto", choices=['auto','stack','mean'])
 
 
@@ -98,9 +98,11 @@ def add_rank_parser(subparsers):
   '''Add argument parser for statistical test
   '''
   subc_rank = subparsers.add_parser("rank", help="Identify significant genes from normalized count table")
-  subc_rank.add_argument("-i","--input",dest = "infile",type=str,required=True, help = "sgRSEA input file, 4 columns")
-  subc_rank.add_argument("-o","--output",dest = "outfile",type=str,required=True, help = "output file name")
-  subc_rank.add_argument("-d","--design",dest = "designfile", type=str, help="design file")
+  subc_rank.add_argument("-i","--input",dest = "infile",type=str,required=True, help = "sgRSEA input file, should be normalized")
+  subc_rank.add_argument("-o","--output",dest = "outfile",type=str,required=True, help = "Output file name")
+  subc_rank.add_argument("-d","--design",dest = "designfile", type=str, help="Design file")
+  subc_rank.add_argument("-t","--treatment",dest="treat",type=str,required=True, help = "Columns/name of treatment samples")
+  subc_rank.add_argument("-c","--control",dest="ctrl",type=str,required=True , help="Columns/name of control samples")
   subc_rank.add_argument("--multiplier",dest = "multiplier",type=int, default = 50, help = "Multiplier to generate background")
   subc_rank.add_argument("--random-seed",dest = "randomSeed",type=int, default = None, help = "Random seed to control permuation process")
   subc_rank.add_argument("--collapse-replicates",dest = "collapsemethod",type=str, default = "None",help = "Way to collapse replicates", choices=['auto','stack','mean','None'])

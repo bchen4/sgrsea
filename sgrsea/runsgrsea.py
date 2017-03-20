@@ -60,7 +60,7 @@ def run(args):
       logging.error("There is no normalized count file. Exit.")
       sys.exit(1)
     else:# Proceed
-      rankgene.run(args.outfile+".norm.txt", args.designfile, args.outfile, args.treat, args.ctrl, args.collapsemethod, args.multiplier, args.randomSeed)
+      rankgene.generank(args.outfile+".norm.txt", args.designfile, args.outfile, args.treat, args.ctrl, args.collapsemethod, args.multiplier, args.randomSeed)
 #BC#      if args.collapsemethod != "None":
 #BC#        files = reformatCountTable.runReformat(args.outfile+".norm.txt",args.designfile, args.outfile,args.treat, args.ctrl, args.collapsemethod)
 #BC#        if len(files)==0:

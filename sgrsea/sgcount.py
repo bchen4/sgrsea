@@ -24,7 +24,7 @@ def prepare_argparser():
   argparser.add_argument("--sgstart",dest="sgstart",type=int, default=-1,help = "The first nucleotide sgRNA starts. 1-index")
   argparser.add_argument("--sgstop",dest="sgstop",type=int, default=-1,help = "The last nucleotide sgRNA starts. 1-index")
   argparser.add_argument("--trim3",dest="trim3",type=str,help = "The trimming pattern from 3'. This pattern and the following sequence will be removed")
-  argparser.add_argument("--num-threads",dest="threads",type=int,default=1,help = "Number of threads to use.")
+  argparser.add_argument("--num-threads",dest="threads",type=int,default=5,help = "Number of threads to use.")
   argparser.add_argument("--file-type",dest="filetype",type=str,default="fqgz",help = "Type of the input file. Can be fq, fa, fqgz. Default is fqgz", choices=['fq','fa','fqgz'])
   return(argparser)
 
@@ -100,6 +100,8 @@ def multicount(dfile, number_of_workers=5, filetype="fqgz"):
   Parse design file, and call sgcount for each pair of files. 
   Combine all results to a Pandas dataframe and return,group by sublib
   '''
+  #logging.debug("Count multiple files")
+  #logging.debug(number_of_workers)
   work_num = min(dfile.shape[0],number_of_workers)
   work_pool = Pool(work_num)
   #workers = []
@@ -184,7 +186,7 @@ def sgcount(fqfile,sgstart, sgstop, trim3, sample="count",sublib="sublib",filety
       total_count += 1
       if total_count % 500000 ==0:
         logging.info("Processed "+fqfile+" "+str(total_count)+" reads...")
-        #break
+       # break
       sequence =  trimseq(seq,sgstart, sgstop, trim3)
       print >> trim_out, ">"+seq_id+"\n"+sequence
       if not seqdic.has_key(sequence):

@@ -29,7 +29,7 @@ def prepare_argparser():
   return(argparser)
 
 
-def run(infile, designfile, ofile, t, c, collapse="None", multiplier=50, randomseed=0):
+def generank(infile, designfile, ofile, t, c, collapse="None", multiplier=50, randomseed=0):
   if collapse == "None":
     gmrank(infile, designfile, ofile, t, c, multiplier, randomseed)
   else:
@@ -57,8 +57,8 @@ def gmrank(infile, designfile, ofile, t, c, multiplier=50, randomseed=0):
   except IOError,message:
     print >> sys.stderr, "cannot open file",message
     sys.exit(1)
-  logging.debug(t)
-  logging.debug(c)
+  #logging.debug(t)
+  #logging.debug(c)
   try:
     treatment_cols = np.array(t.split(","), dtype=int)
     control_cols = np.array(c.split(","),dtype=int)
@@ -72,8 +72,8 @@ def gmrank(infile, designfile, ofile, t, c, multiplier=50, randomseed=0):
     fnames = []
     for tgroup,cgroup in zip(treatment_cols, control_cols):
       #For each comparison group, construct comparisons for all replicates
-      logging.debug(tgroup)
-      logging.debug(cgroup)
+      #logging.debug(tgroup)
+      #logging.debug(cgroup)
       t_sample = dfile[dfile['group']==tgroup].loc[:,'sample'].unique()
       c_sample = dfile[dfile['group']==cgroup].loc[:,'sample'].unique()
       t_cols = mapcolindex(cfile._get_numeric_data().columns,t_sample)
@@ -177,6 +177,9 @@ def averageReplicates(cfile, cols):
   nfile = cfile._get_numeric_data()
   cfile['ave_ctrl'] = nfile.iloc[:,cols].mean(axis=1)
   return cfile.loc[:,['sgRNA','ave_ctrl']]
+
+def run(args):
+  generank(args.infile, args.designfile, args.outfile, args.treat, args.ctrl, args.collapsemethod, args.multiplier, args.randomSeed)
 
 
 def main():

@@ -4,7 +4,7 @@
 
 
 
-**Version** : v0.0.6
+**Version** : v1.0.0
 
 **Authors**
 

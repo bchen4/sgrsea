@@ -14,6 +14,8 @@ from scipy import stats
 from statsmodels.stats.multitest import multipletests
 
 logging.basicConfig(format='%(levelname)s:%(message)s',level=logging.DEBUG)
+pd.options.mode.chained_assignment = None
+
 
 def prepare_argparser():
   description = "sgRSEA main stat function"
@@ -22,35 +24,12 @@ def prepare_argparser():
   argparser.add_argument("-i","--input",dest = "infile",type=str,required=True, help = "sgRSEA input file, 4 columns")
   argparser.add_argument("-o","--output",dest = "outfile",type=str,required=True, help = "output file name")
   argparser.add_argument("--multiplier",dest = "multiplier",type=int, default = 50, help = "Multiplier to generate background")
-  argparser.add_argument("--random-seed",dest = "randomSeed",type=int, default = None, help = "Random seed to control permuation process")
+  argparser.add_argument("--random-seed",dest = "randomSeed",type=int, default = None, help = "Random seed to control permutaion process")
   #argparser.add_argument("--bgtag",dest = "bgtag",type=str, default = "",help = "Sting to identify control sgRNAs")
   #argparser.add_argument("--bg-row-start",dest = "bgrowstart",type=int,default = -1, help = "Row count of the start of control sgRNA block")
   #argparser.add_argument("--bg-row-stop",dest = "bgrowstop",type=int, default=-1, help = "Row count of the stop of control sgRNA block")
   return(argparser)
 
-#DEP#def getBackground(infile,nontag="",tagStart=0,tagStop=0):
-#DEP#  '''Get background data frame from either string tag or row range.
-#DEP#  '''
-#DEP#  if len(nontag)>0:
-#DEP#    bgFile = infile[infile.iloc[:,0].str.contains(nontag)]
-#DEP#    dataFile = infile[infile.iloc[:,0].str.contains(nontag)==False]
-#DEP#  elif tagStart<tagStop and tagStart<infile.shape[0]: #use the row range to get file
-#DEP#    tagStart -= 1
-#DEP#    tagStop = min(infile.shape[0],tagStop)
-#DEP#    bgFile = infile.iloc[tagStart:tagStop,:]
-#DEP#    dataFile = infile.iloc[0:tagStart-1,:].append(infile.iloc[tagStop:,:])
-#DEP#  else:#Non background
-#DEP#    logging.info("No designed NonTargeting sgRNAs, use input data as backgound.")
-#DEP#    bgFile = copy.copy(infile)
-#DEP#    dataFile = infile
-#DEP#
-#DEP#  #logging.debug("bgFile: "+str(bgFile.shape[0]))
-#DEP#  #logging.debug("dataFile: "+str(dataFile.shape[0]))
-#DEP#  if bgFile.shape[0]==0: #backgound file is empty
-#DEP#    logging.info("There is no NonTargeting sgRNA found. Use input data as background.")
-#DEP#    bgFile = copy.copy(infile)
-#DEP#    dataFile = infile
-#DEP#  return (dataFile,bgFile)
 
 def addZstat(data_df, pNull):
   data_df['pmme'] = data_df['treat']/(data_df['treat']+data_df['ctrl'])
@@ -196,7 +175,13 @@ def runStatinfer(infile,outfile,multiplier,randomseed):
   #  p0 = pMME(bgFile)
   #else:#Use dataset as background
   ##logging.debug("stattest started "+datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))
-  dataFile = pd.read_table(infile)
+  if isinstance(infile,str):
+    dataFile = pd.read_table(infile)
+  elif isinstance(infile, pd.DataFrame):
+    dataFile = infile
+  else:
+    logging.error("Input file for stattest is not correct. Exit")
+    sys.exit(1)
   p0 = pMME(dataFile.iloc[:,2],dataFile.iloc[:,3])
   if p0 ==0 or p0 ==1:
     logging.error("pMME for background equals to 0/1, indicating no counts for treatment or control. Please check your data. Exit.")
@@ -221,8 +206,13 @@ def runStatinfer(infile,outfile,multiplier,randomseed):
   #data_sdf.to_csv("test_real_standardize.txt",sep="\t",header=True,index=False)
   fdf = getPQ(data_sdf,null_s_array)
   fdf = fdf.loc[:,['Gene','sgcount','NScore','pos_p','pos_fdr','neg_p','neg_fdr','pos_rank','neg_rank']]
-  
-  fdf.to_csv(outfile,sep="\t",index=False)
+  #change file header to distinguish replicates
+  header = fdf.columns.tolist()
+  for i in range(2,len(header)):
+    header[i] = outfile+"_"+header[i]
+  fdf.columns = header
+  fdf.to_csv(outfile+".sgRSEA.xls",sep="\t",index=False)
+  return outfile+".sgRSEA.xls"
 
 def main():
   argparser = prepare_argparser()

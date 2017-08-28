@@ -14,11 +14,11 @@ def prepare_argparser():
   description = "Reformat the count table to sgRSEA format"
   epilog = "For command line options of each command, type %(prog)% COMMAND -h"
   argparser = ap.ArgumentParser(description=description, epilog = epilog)
-  argparser.add_argument("-i","--input",dest = "infile",type=str,required=True, help="input BAM file")
-  argparser.add_argument("-o","--output",dest = "outfile",type=str,required=True, help="output")
-  argparser.add_argument("-d","--design",dest = "designfile",type=str, help="output")
-  argparser.add_argument("-t","--treatment",dest="treat",type=str,required=True, help = "columns/name of treatment samples")
-  argparser.add_argument("-c","--control",dest="ctrl",type=str,required=True, help="columns/name of control samples")
+  argparser.add_argument("-i","--input",dest = "infile",type=str,required=True, help="input count file")
+  argparser.add_argument("-o","--output",dest = "outfile",type=str,required=True, help="Output")
+  argparser.add_argument("-d","--design",dest = "designfile",type=str, help="Design file")
+  argparser.add_argument("-t","--treatment",dest="treat",type=str,required=True, help = "Columns/name of treatment samples")
+  argparser.add_argument("-c","--control",dest="ctrl",type=str,required=True, help="Columns/name of control samples")
   argparser.add_argument("--collapse-replicates",dest="collapsemethod",type=str, help = "Way to collapse replicates", default="auto", choices=['auto','stack','mean'])
   #argparser.add_argument("--c-sample",dest="ctrlsample",type=str, help="sample of control samples")
   return(argparser)
@@ -33,13 +33,13 @@ def runReformat(infile, designfile, ofile, t, c, collapsemethod):
   except IOError,message:
     print >> sys.stderr, "cannot open file",message
     sys.exit(1)
-  if not designfile:
+  try:
     treatment_cols = np.array(t.split(","),dtype=int)
     control_cols = np.array(c.split(","),dtype=int)
     df = reformat(cfile, treatment_cols, control_cols, collapsemethod)
     df.to_csv(ofile,sep="\t",index=False)
     return [ofile]
-  else:
+  except:
     dfile = pd.read_table(designfile)
     treatment_cols = np.array(t.split(","),dtype=str)
     control_cols = np.array(c.split(","),dtype=str)
@@ -66,16 +66,19 @@ def mapcolindex(header,samples):
 def stackReplicates(cfile,treatcols,ctrlcols):
   ##logging.debug(treatcols)
   ##logging.debug(ctrlcols)
-  nfile = cfile._get_numeric_data()
-  df = cfile.loc[:,['sgRNA','Gene']].join(nfile.iloc[:,[treatcols[0],ctrlcols[0]]])
-  df.columns = ['sgRNA','Gene','treatment','control']
-  for tc, cc in zip(treatcols[1:],ctrlcols[1:]):
+  if len(treatcols) != len(ctrlcols):
+    averageReplicates(cfile, treatcols, ctrlcols)
+  else:
+    nfile = cfile._get_numeric_data()
+    df = cfile.loc[:,['sgRNA','Gene']].join(nfile.iloc[:,[treatcols[0],ctrlcols[0]]])
+    df.columns = ['sgRNA','Gene','treatment','control']
+    for tc, cc in zip(treatcols[1:],ctrlcols[1:]):
     ##logging.debug(tc)
     ##logging.debug(cc)
-    newdf = cfile.loc[:,['sgRNA','Gene']].join(nfile.iloc[:,[tc,cc]])
-    newdf.columns = df.columns
-    df = df.append(newdf)
-  return df
+      newdf = cfile.loc[:,['sgRNA','Gene']].join(nfile.iloc[:,[tc,cc]])
+      newdf.columns = df.columns
+      df = df.append(newdf)
+    return df
 
 def averageReplicates(cfile, treatcols, ctrlcols):
   nfile = cfile._get_numeric_data()

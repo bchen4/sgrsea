@@ -45,7 +45,7 @@ def main():
 
   #ext_modules = 
   setup(name='sgrsea',
-      version='v1.0.0',
+      version='v1.0',
       description='Enrichment Analysis of CRISPR/Cas9 Knockout Screen Data',
       url='http://bchen4.github.io/sgrsea',
       author='Beibei Chen',
